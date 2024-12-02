@@ -1,0 +1,1 @@
+This repository is meant to store the coding part of my final paper of my bachelor's programme in Computer Science
