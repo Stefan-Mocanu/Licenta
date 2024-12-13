@@ -47,6 +47,12 @@ func readNetFromJSONFile() (Net, Marking) {
 	var m0 Marking
 	net = data.NET
 	m0 = data.M0
+	for place := range net.PLACES {
+		_, ok := m0.CONTENT[place]
+		if !ok {
+			m0.CONTENT[place] = 0
+		}
+	}
 	// enc := json.NewEncoder(os.Stdout)
 	// enc.SetIndent(" ", " ")
 	// enc.Encode(net)
@@ -93,11 +99,13 @@ func main() {
 	var current_marking Marking
 	net, current_marking = readNetFromJSONFile()
 	markings = append(markings, current_marking)
+	fmt.Println(current_marking)
 	var transitions []string
 	transitions = getViableTransitions(net, markings[0])
 	for len(transitions) != 0 {
 		transition := selectTransition(transitions)
-		markings = append(markings, activateTransition(net, transition, markings[len(markings)-1]))
+		current_marking = activateTransition(net, transition, markings[len(markings)-1])
+		markings = append(markings, current_marking)
 		fmt.Println(markings[len(markings)-1])
 		transitions = getViableTransitions(net, markings[len(markings)-1])
 	}
