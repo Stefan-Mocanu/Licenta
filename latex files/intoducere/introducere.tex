@@ -1,0 +1,70 @@
+\documentclass[12pt]{article}
+\usepackage{times}\usepackage{setspace}\doublespacing\usepackage[margin=2.5cm]{geometry}
+\begin{document}
+\section{Introduction}
+    \subsection{The type of the thesis and the specific subfield}
+    This thesis is a research and software development project. 
+    It falls within the field of Petri net theory and compilers, 
+    with applications in modeling and simulation of concurrent systems.
+
+    \subsection{General presentation of the topic}
+
+    Petri nets are a mathematical modeling tool used to describe and analyze concurrent, distributed, and parallel systems. 
+    They provide a formal way to represent states and transitions, 
+    making them useful in verifying properties such as 
+    deadlocks, reachability, and synchronization in complex systems.
+
+    Compilers, on the other hand, are essential in transforming high-level representations into executable models, 
+    automating the process of simulation and analysis. 
+    By combining Petri net theory with compiler techniques, 
+    we can create a language that enables users to define Petri nets in a structured manner 
+    and automatically generate executable code for simulation. 
+    This approach facilitates the modeling, testing and visualization of 
+    concurrent systems, making it easier to analyze their behavior.
+
+    \subsection{Purpose and motivation for choosing the topic}
+
+    Modeling concurrent and parallel systems is essential for analyzing distributed processes, 
+    formal verification, and their optimization. 
+    Petri nets are a powerful tool in this field, and a dedicated language can simplify 
+    the definition and testing of models. 
+    The motivation for choosing this topic is both the theoretical interest in formal systems 
+    and the practical applicability in verifying concurrent software.
+
+    \subsection{Own contribution to the thesis}
+
+    I have developed a description language for Petri nets and a compiler written in Haskell 
+    that transforms this language into a Golang executable representation and LaTeX code for visualization. 
+    The project combines concepts from formal language theory, compilers, 
+    and concurrent system modeling.
+
+    \subsection{Structure of the thesis}
+    \begin{enumerate}
+        \item Introduction: Presents the context of the thesis, motivation, and personal contribution.
+        \item TBA
+    \end{enumerate}
+\section{Preliminaries}
+    \subsection{Scientific and Technological Concepts Underlying the Topic}
+    \begin{itemize}
+        \item Petri net
+        \item Place
+        \item Transition
+        \item Marking
+        \item Firing a transition
+        \item Cicle detection
+        \item Timed petri nets
+        \item Coloured petri nets
+        \item Inhibitor Arcs
+        \item Highlevel nets
+    \end{itemize}
+    \subsection{Current State of the Specific Subfield}
+    ********TBA
+    \subsection{Objectives of the Thesis in Context}
+    The main goal of this thesis is to develop a domain-specific language for defining Petri nets, along with a compiler that translates these definitions into executable code for simulation and LaTeX code for visualization. The specific objectives are:
+    \begin{itemize}
+        \item To design a simple and expressive language for defining Petri nets.
+        \item To implement a compiler in Haskell that generates both simulation-ready code and graphical representations.
+        \item To compare this approach with existing tools and evaluate its advantages in terms of usability, automation, and flexibility.
+    \end{itemize}
+    This project aims to bridge the gap between formal modeling techniques and practical implementation, making Petri net analysis more accessible and automated.
+\end{document}
