@@ -1,5 +1,8 @@
 \documentclass[12pt]{article}
 \usepackage{times}\usepackage{setspace}\doublespacing\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsthm}
+
+\newtheorem{definition}{Definition}
 \begin{document}
 \section{Introduction}
     \subsection{The type of the thesis and the specific subfield}
@@ -34,7 +37,7 @@
     \subsection{Own contribution to the thesis}
 
     I have developed a description language for Petri nets and a compiler written in Haskell 
-    that transforms this language into a Golang executable representation and LaTeX code for visualization. 
+    that transforms this language into a GoLang executable representation and LaTeX code for visualization. 
     The project combines concepts from formal language theory, compilers, 
     and concurrent system modeling.
 
@@ -45,18 +48,36 @@
     \end{enumerate}
 \section{Preliminaries}
     \subsection{Scientific and Technological Concepts Underlying the Topic}
-    \begin{itemize}
-        \item Petri net
-        \item Place
-        \item Transition
-        \item Marking
-        \item Firing a transition
-        \item Cicle detection
-        \item Timed petri nets
-        \item Coloured petri nets
-        \item Inhibitor Arcs
-        \item Highlevel nets
-    \end{itemize}
+    \begin{definition}
+        A \textbf{net} is a triple \(N=(P,T,F)\) where:
+        \begin{enumerate}
+            \item \(P\) and \(T\) are finite disjoint sets of \textbf{places} and \textbf{transitions}.
+            \item \(F \subseteq (P \times T)\cup(T \times P)\) is a set of flow relations.
+            \item for every \(t \in T\) there exists $p,q \in P$ such that $(p,t),(t,q) \in F$.
+            \item for every $t \in T$ and $p,q \in P$, if $(p,t),(t,q) \in F$, then $p \neq q$. \cite{rozenberg1996elementary}
+        \end{enumerate}
+    \end{definition}
+
+    Having a net \(N=(P,T,F)\) and \(t \in T\), we note $\bullet t$ the incoming arcs into t and $t \bullet$ the outcoming arcs from t. The notation is analogous for $p \in P$.
+
+    \begin{definition}
+        A \textbf{Petri net} is a net of the form $P=(N,M,W)$, where:
+        \begin{enumerate}
+            \item $N=(P,T,F)$ is a net.
+            \item \(M: P \rightarrow Z\) is a place multiset, where \(Z\) is a countable set. \(M\) maps for every place the number of tokens it has, and it is known as a \textbf{marking}.
+            \item \(W: F \rightarrow Z\) is an arc multiset, which denotes the arc's weight. \cite{rozenberg1996elementary}
+        \end{enumerate}
+    \end{definition}
+    
+    Having a Petri net \(PN=(N,M,W)\) and \(N=(P,T,F)\) a transition \(t \in T\) can be \textbf{fired} if for every arc \(a=(p,t) \in \bullet t\), \(W(a) \le M(p)\). \cite{diaz2013petri}
+        
+    
+        Cicle detection
+        Timed petri nets
+        Coloured petri nets
+        Inhibitor Arcs
+        Highlevel nets
+    
     \subsection{Current State of the Specific Subfield}
     ********TBA
     \subsection{Objectives of the Thesis in Context}
@@ -67,4 +88,6 @@
         \item To compare this approach with existing tools and evaluate its advantages in terms of usability, automation, and flexibility.
     \end{itemize}
     This project aims to bridge the gap between formal modeling techniques and practical implementation, making Petri net analysis more accessible and automated.
+    \bibliographystyle{IEEEtran}
+    \bibliography{citations}
 \end{document}
