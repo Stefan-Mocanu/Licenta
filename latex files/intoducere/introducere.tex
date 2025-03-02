@@ -1,7 +1,7 @@
 \documentclass[12pt]{article}
 \usepackage{times}\usepackage{setspace}\doublespacing\usepackage[margin=2.5cm]{geometry}
 \usepackage{amsthm}
-
+\usepackage{mathtools}
 \newtheorem{definition}{Definition}
 \begin{document}
 \section{Introduction}
@@ -49,28 +49,38 @@
 \section{Preliminaries}
     \subsection{Scientific and Technological Concepts Underlying the Topic}
     \begin{definition}
-        A \textbf{net} is a triple \(N=(P,T,F)\) where:
+        A \textbf{net} is a triple \(N=(P,T,F)\) where:  \cite{rozenberg1996elementary}
         \begin{enumerate}
             \item \(P\) and \(T\) are finite disjoint sets of \textbf{places} and \textbf{transitions}.
             \item \(F \subseteq (P \times T)\cup(T \times P)\) is a set of flow relations.
             \item for every \(t \in T\) there exists $p,q \in P$ such that $(p,t),(t,q) \in F$.
-            \item for every $t \in T$ and $p,q \in P$, if $(p,t),(t,q) \in F$, then $p \neq q$. \cite{rozenberg1996elementary}
+            \item for every $t \in T$ and $p,q \in P$, if $(p,t),(t,q) \in F$, then $p \neq q$.
         \end{enumerate}
     \end{definition}
 
     Having a net \(N=(P,T,F)\) and \(t \in T\), we note $\bullet t$ the incoming arcs into t and $t \bullet$ the outcoming arcs from t. The notation is analogous for $p \in P$.
 
     \begin{definition}
-        A \textbf{Petri net} is a net of the form $P=(N,M,W)$, where:
+        A \textbf{Petri net} is a net of the form $PN=(N,M,W)$, where: \cite{rozenberg1996elementary}
         \begin{enumerate}
             \item $N=(P,T,F)$ is a net.
-            \item \(M: P \rightarrow Z\) is a place multiset, where \(Z\) is a countable set. \(M\) maps for every place the number of tokens it has, and it is known as a \textbf{marking}.
-            \item \(W: F \rightarrow Z\) is an arc multiset, which denotes the arc's weight. \cite{rozenberg1996elementary}
+            \item \(M: P \rightarrow Z\) is a place multiset, where \(Z\) is a countable set. \(M\) maps for every place the number of tokens it has, and it is known as the \textbf{initial marking}, often noted with \(M0\) or \(m0\).
+            \item \(W: F \rightarrow Z\) is an arc multiset, which denotes the arc's weight. 
         \end{enumerate}
     \end{definition}
     
-    Having a Petri net \(PN=(N,M,W)\) and \(N=(P,T,F)\) a transition \(t \in T\) can be \textbf{fired} if for every arc \(a=(p,t) \in \bullet t\), \(W(a) \le M(p)\). \cite{diaz2013petri}
-        
+    \begin{definition}
+        Having a Petri net \(PN=(N,M,W)\) and \(N=(P,T,F)\):  \cite{diaz2013petri}
+        \begin{enumerate}
+            \item A transition \(t \in T\) can be \textbf{fired} if for every arc \(a=(p,t) \in \bullet t\), \(W(a) \le M(p)\).
+            \item By firing t, a new marking M' is created like this: \begin{displaymath}M'=\{(p,x)|p \in P, x = M(p) - W((p,t)) + W((t,p))\}\end{displaymath}
+            \item If \((p,t)\notin T\) or \((t,p)\notin T\), then \(W(p,t)\), respectively \(W(t,p)\) will be subtituted with 0, or its equivalent in Z.
+            \item If $M'$ can be obtained by firing a transition from $M$, then this relation is noted \(M \rightarrow M'\). 
+            \item If $M'$ can be obtained by firing an arbitrary number of transitions starting with $M$ then $M'$ is reachable from $M$, and reachability is noted like this: \(M \xrightarrow{*} M'\).
+        \end{enumerate}
+    \end{definition}
+    
+
     
         Cicle detection
         Timed petri nets
