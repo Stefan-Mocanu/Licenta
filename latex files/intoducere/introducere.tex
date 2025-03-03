@@ -74,18 +74,32 @@
         \begin{enumerate}
             \item A transition \(t \in T\) can be \textbf{fired} if for every arc \(a=(p,t) \in \bullet t\), \(W(a) \le M(p)\).
             \item By firing t, a new marking M' is created like this: \begin{displaymath}M'=\{(p,x)|p \in P, x = M(p) - W((p,t)) + W((t,p))\}\end{displaymath}
-            \item If \((p,t)\notin T\) or \((t,p)\notin T\), then \(W(p,t)\), respectively \(W(t,p)\) will be subtituted with 0, or its equivalent in Z.
+            If \((p,t)\notin T\) or \((t,p)\notin T\), then \(W(p,t)\), respectively \(W(t,p)\) will be subtituted with 0, or its equivalent in Z.
             \item If $M'$ can be obtained by firing a transition from $M$, then this relation is noted \(M \rightarrow M'\). 
             \item If $M'$ can be obtained by firing an arbitrary number of transitions starting with $M$ then $M'$ is reachable from $M$, and reachability is noted like this: \(M \xrightarrow{*} M'\).
         \end{enumerate}
     \end{definition}
-    
-
-    
+    \begin{definition}
+        A \textbf{coloured Petri net(CPN)} is defined by a tuple \(CPN=(N,C,M,W)\) where: \cite{girault2013petri}
+        \begin{enumerate}
+            \item $N=(P,T,F)$ is a net.
+            \item \(C\) is the set of colour classes.
+            \item \(M: P \rightarrow 2^{C \times Z}\) is the modified PN marking function to accomodate the use colours
+            \item \(W: F \rightarrow 2^{C \times Z}\) is the modified PN arc weight function to accomodate the use of colours
+        \end{enumerate}
+    \end{definition}
+    \begin{definition}
+        A \textbf{Petri net with inhibitor arcs} is defined by a tuple \(PNI=(PN,Inh)\) where: \cite{diaz2013petri}
+        \begin{enumerate}
+            \item \(PN\) is a Petri net using the above notation
+            \item \(Inh\) is the inhibition matrix defined in \((Z_\omega \backslash 0)^{P\times T}\).
+            \item To the firability criteria of a transition \(t \in T\) from a marking $M$ the condition of $M<Inh(t)$(the comparison is made component per component) is added.
+        \end{enumerate}
+    \end{definition}
+    \begin{definition}
+        Timed Petri nets extend Petri nets by associating a firing duration with each transition. More formally a \textbf{time Petri net} is a tuple $TPN=(PN,IS)$, in which $PN$ is a Petri net, and $IS:T\rightarrow Q^+ \times (Q^+ \cup \{\infty\})$ is the static interval function. \cite{diaz2013petri}
+    \end{definition}
         Cicle detection
-        Timed petri nets
-        Coloured petri nets
-        Inhibitor Arcs
         Highlevel nets
     
     \subsection{Current State of the Specific Subfield}
