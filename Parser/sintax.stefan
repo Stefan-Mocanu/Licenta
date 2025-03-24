@@ -1,0 +1,12 @@
+~PLACES
+P1 [tokens=4]  // Input
+P2 [tokens=2]  // Buffer
+P3 [tokens=0]  // Output
+
+~TRANSITIONS
+T1 
+
+~ARCS
+P1 -> T1 [weight=2]
+P2 -> T1 [weight=1]
+T1 -> P3 [weight=1]
