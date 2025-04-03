@@ -1,0 +1,31 @@
+{
+    "net":{
+        "places": {
+            "p1":{"placeholder":0},
+            "p2":{"placeholder":0},
+            "p3":{"placeholder":0}
+        },
+        "transitions": {
+            "t1":{
+                
+                "input": [{
+                    "place": "p1",
+                    "value": 2
+                },{
+                    "place": "p2",
+                    "value": 1
+                }],
+                "output":[{
+                    "place": "p3",
+                    "value": 1
+                }]
+            }
+    }
+    },
+    "m0": {
+        "content": {
+            "p1": 4,
+            "p2": 2
+        }
+    }
+}
