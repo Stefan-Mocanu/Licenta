@@ -1,12 +1,14 @@
+~NET_TYPE
+TIMED INHIBITED COLORED
 ~PLACES
-P1 [tokens=4]  // Input
-P2 [tokens=2]  // Buffer
-P3 [tokens=0]  // Output
+P1 [tokens={red=4,blue=10}]  // Input
+P2 [tokens={red=4,blue=10}]  // Buffer
+P3 [tokens={red=4,blue=10}]  // Output
 
 ~TRANSITIONS
-T1 
+T1 [time=(2,5)]
 
 ~ARCS
-P1 -> T1 [weight=2]
-P2 -> T1 [weight=1]
-T1 -> P3 [weight=1]
+P1 -> T1 [weight={red=4,blue=10}] [inh=4]
+P2 -> T1 [weight={red=4,blue=10}]
+T1 -> P3 [weight={red=4,blue=10}]

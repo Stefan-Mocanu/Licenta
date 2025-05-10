@@ -114,8 +114,8 @@ func endTransition(net Net, transitionName string, m Marking) Marking {
 		newMarking.CONTENT[arc.PLACE] += arc.VALUE
 	}
 	return newMarking
-
 }
+
 func main() {
 	var net Net
 	var markings []Marking
