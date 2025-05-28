@@ -1,14 +1,21 @@
 ~NET_TYPE
-TIMED INHIBITED COLORED
+TIMED INHIBITED HIGH_LEVEL
+~VARIABLES
+N = 3
+MR = 2
 ~PLACES
-P1 [tokens={red=4,blue=10}]  // Input
-P2 [tokens={red=4,blue=10}]  // Buffer
-P3 [tokens={red=4,blue=10}]  // Output
+P1 [tokens=4]  // Input
+P2 [tokens=2]  // Buffer
+P3 [tokens=0]  // Output
+PF<N> [tokens=5]
 
 ~TRANSITIONS
 T1 [time=(2,5)]
+T2 [time=(1,2)]
 
 ~ARCS
-P1 -> T1 [weight={red=4,blue=10}] [inh=4]
-P2 -> T1 [weight={red=4,blue=10}]
-T1 -> P3 [weight={red=4,blue=10}]
+P1 -> T1 [weight=1]
+P2 -> T1 [weight=2]
+T1 -> P3 [weight=3] [inh=4]
+PF<N> -> T2 [weight=2] [inh=4]
+T2 -> P1 [weight=4]

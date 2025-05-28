@@ -16,7 +16,7 @@ import System.Environment (getArgs)
 import System.Exit (die, exitFailure)
 import System.Directory (doesFileExist)
 import Data.List (isPrefixOf, isSuffixOf, intercalate)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, isJust)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Debug.Trace
@@ -24,9 +24,14 @@ import Debug.Trace
 data NetType = NetType {
     isColored   :: Bool,
     isTimed     :: Bool,
-    isInhibited :: Bool
+    isInhibited :: Bool,
+    isHighLevel :: Bool,
+    isColoredOriginal :: Bool
 } deriving (Show, Generic)
 
+data Variables = Variables{
+    vars :: Map.Map String Int
+} deriving (Show, Generic)
 -- Define Place, Transition, and Arc structures
 data Place = Place { placeholder :: Int } deriving (Show, Generic)
 -- instance ToJSON Place
@@ -80,16 +85,20 @@ data PetriNet = PetriNet {
     net     :: Net,
     m0      :: M0,
     netType :: NetType,
-    colors  :: [String]
+    colors  :: [String],
+    variables:: Variables
 } deriving (Show, Generic)
 -- instance ToJSON PetriNet
 
+instance ToJSON Variables where
+    toJSON (Variables vars) = toJSON vars
 
 instance ToJSON NetType where
-    toJSON (NetType colored timed inhibited) = object
+    toJSON (NetType colored timed inhibited highlevel _) = object
         [ "isColored"   .= colored
         , "isTimed"     .= timed
         , "isInhibited" .= inhibited
+        , "isHighLevel" .= highlevel
         ]
 instance ToJSON Place where
     toJSON (Place placeholder) = object ["placeholder" .= placeholder]
@@ -100,10 +109,15 @@ instance ToJSON Arc where
             ++ maybe [] (\inh -> ["inhibitor" .= inh]) inhibitor
 
 instance ToJSON Transition where
-    toJSON (Transition input output time) = object $ [
-        "input" .= input,
-        "output" .= output] 
-        ++ maybe [] (\(minT, maxT) -> ["time" .= object ["minTime" .= minT, "maxTime" .= maxT]]) time
+    toJSON (Transition input output time) = object $
+        [ "input"  .= input
+        , "output" .= output
+        ] ++ case time of
+                Just (minT, maxT) -> 
+                    [ "minTime" .= minT
+                    , "maxTime" .= maxT
+                    ]
+                Nothing -> []
 
 instance ToJSON Net where
     toJSON (Net places transitions) = object [
@@ -115,9 +129,12 @@ instance ToJSON M0 where
     toJSON (M0 (Right colored)) = object ["content" .= colored]
 
 instance ToJSON PetriNet where
-    toJSON (PetriNet net m0 netType colors) = 
+    toJSON (PetriNet net m0 netType colors variables) = 
         let colorField = if isColored netType then Just ("colors" .= colors) else Nothing
-        in object (["net" .= net, "m0" .= m0, "netType" .= netType] ++ maybe [] (:[]) colorField)
+        in object (["net" .= net
+                    , "m0" .= m0
+                    , "netType" .= netType
+                    , "variables" .= variables] ++ maybe [] (:[]) colorField)
 
 
 instance ToJSON TimeInterval where 
@@ -129,20 +146,43 @@ spacesOrComments :: Parser ()
 spacesOrComments = void $ many (void (oneOf " \t\n") <|> void (char '/' *> manyTill anyChar newline))
 
 
-parsePlace :: Bool -> Parser (String, Place, Int, Maybe (Map.Map String Int))
-parsePlace isColored = do
+parsePlace :: Bool -> Bool -> Variables -> Parser [(String, Place, Int, Maybe (Map.Map String Int))]
+parsePlace isColored isHighLevel (Variables varMap) = do
     name <- many1 alphaNum
+    nameSuffix <- optionMaybe (between (char '<') (char '>') (many1 alphaNum))
     spaces
     tokenCount <- optionMaybe (try (if isColored then parseColoredTokens else parseSimpleTokens))
     spacesOrComments
-    let placeholderValue = 0
-        tokenValue = case tokenCount of
-            Just (Left count) -> count
-            _ -> 0
-        colorTokens = case tokenCount of
-            Just (Right cmap) -> Just cmap
-            _ -> Nothing
-    return (name, Place placeholderValue, tokenValue, colorTokens)
+
+    case nameSuffix of
+        Just varName ->
+            case Map.lookup varName varMap of
+                Just n ->
+                    let expanded = [ 
+                            if isColored 
+                                then
+                                    let baseTokens = case tokenCount of
+                                                        Just (Right cmap) -> cmap
+                                                        _ -> Map.empty
+                                        extendedTokens = Map.insert (varName ++ "_" ++ show i) 1 baseTokens
+                                    in (name ++ "_" ++ show i, Place 0, 0, Just extendedTokens)
+                                else
+                                    let baseCount = case tokenCount of
+                                                        Just (Left c) -> c
+                                                        _ -> 0
+                                    in (name ++ "_" ++ show i, Place 0, baseCount, Just (Map.fromList [((varName ++ "_" ++ show i), 1),("token", baseCount)]))
+                          | i <- [1 .. n] ]
+                    in return expanded
+                Nothing -> fail $ "Variable " ++ varName ++ " not found in Variables map"
+        Nothing ->
+            let tokenValue = case tokenCount of
+                    Just (Left count) -> count
+                    _ -> 0
+                colorTokens = case tokenCount of
+                    Just (Right cmap) -> Just cmap
+                    _ -> Nothing
+            in return [(name, Place 0, tokenValue, Just (Map.fromList [("token",tokenValue)]))]
+
 
 -- [tokens=2]
 parseSimpleTokens :: Parser (Either Int (Map.Map String Int))
@@ -167,6 +207,25 @@ parseColorPair = do
     n <- many1 digit
     return (color, read n)
 
+parseVariable :: Parser (String, Int)
+parseVariable = do
+    color <- many1 alphaNum
+    spaces
+    _ <- char '='
+    spaces
+    n <- many1 digit
+    spacesOrComments
+    return (color, read n)
+
+parseVariables :: Parser Variables
+parseVariables = do
+    spacesOrComments
+    string "~VARIABLES"
+    spacesOrComments
+    pairs <-manyTill parseVariable (lookAhead (string "~PLACES"))
+    return $ Variables{
+        vars = Map.fromList pairs
+    }
 
 parseNetType :: Parser NetType
 parseNetType = do
@@ -175,9 +234,11 @@ parseNetType = do
     flags <- manyTill anyChar newline
     let types = words flags
     return $ NetType
-        { isColored = "COLORED" `elem` types
+        { isColored = "COLORED" `elem` types || "HIGH_LEVEL" `elem` types
         , isTimed = "TIMED" `elem` types
         , isInhibited = "INHIBITED" `elem` types
+        , isHighLevel = "HIGH_LEVEL" `elem` types
+        , isColoredOriginal = "COLORED" `elem` types
         }
 
 parseTime :: Parser TimeInterval
@@ -189,13 +250,20 @@ parseTime = do
     _ <- char ')' >> char ']'
     return $ TimeInterval (read minT) (read maxT)
 
-parseTransition :: Bool -> Parser (String, Maybe (Int, Int))
-parseTransition isTimed = do
+parseTransition :: Bool -> Bool -> Variables -> Parser [(String, Maybe (Int, Int))]
+parseTransition isTimed isHighLevel (Variables varMap) = do
     name <- many1 alphaNum
     spaces
     time <- if isTimed then optionMaybe parseTime else return Nothing
     newline
-    return (name, fmap (\(TimeInterval minT maxT) -> (minT, maxT)) time)
+    let interval = fmap (\(TimeInterval minT maxT) -> (minT, maxT)) time
+    let result = if isHighLevel
+                 then [ (name ++"_"++ key ++"_"++ show i, interval)
+                      | (key, value) <- Map.toList varMap
+                      , i <- [1 .. value] ]
+                 else [ (name, interval) ]
+    return result
+
 
 -- Parser for a simple weight like [weight=2]
 parseIntWeight :: Parser Weight
@@ -231,28 +299,95 @@ parseColoredInhibitor = do
   _ <- string "}]"
   return $ InhColored (Map.fromList pairs)
 
-parseArc :: Bool -> Bool -> [String] -> [String] -> Parser (String, Arc, Bool)
-parseArc isColored isInhibited placeNames transitionNames = do
+extendWeight :: Weight -> String -> Weight
+extendWeight (Colored m) key = Colored (Map.insert key 1 m)
+extendWeight (Simple n) key      = Colored (Map.fromList [(key, 1),("token",n)])  -- or error if you prefer stricter behavior
+
+changeInhibitor :: Maybe Inhibitor -> Maybe Inhibitor
+changeInhibitor (Just(InhSimple inh)) = Just (InhColored (Map.fromList [("token", inh)]))
+changeInhibitor Nothing = Nothing
+
+parseArc :: Bool -> Bool -> Bool -> Variables -> [String] -> [String] -> Parser [(String, Arc, Bool)]
+parseArc isColored isInhibited isHighLevel (Variables varMap) placeNames transitionNames = do
     src <- many1 alphaNum
+    srcVar <- optionMaybe (between (char '<') (char '>') (many1 alphaNum))
     spaces
     _ <- string "->"
     spaces
     tgt <- many1 alphaNum
+    tgtVar <- optionMaybe (between (char '<') (char '>') (many1 alphaNum))
     spaces
-    weight <- if isColored then parseColorMap else parseIntWeight
+
+    weight <- if isHighLevel || isColored
+                then do
+                    m <- if isColored
+                           then parseColorMap  -- m :: Map String Int
+                           else do
+                               w <- parseIntWeight
+                               return w  -- Also Map String Int
+                    return m  -- Now m is the right type
+                else do
+                    w <- parseIntWeight
+                    return w
     spaces
-    inh <- if isInhibited
+    inh_aux <- if isInhibited
         then optionMaybe (try (lookAhead (char '[' >> string "inh=") >> spaces >> parseInhibitor isColored))
         else return Nothing
     spacesOrComments
-    let isSrcPlace = src `elem` placeNames
-        isTgtPlace = tgt `elem` placeNames
-    case (isSrcPlace, isTgtPlace) of
-      (True, False) -> -- input arc
-        return (tgt, Arc src weight inh, True)
-      (False, True) -> -- output arc
-        return (src, Arc tgt weight inh, False)
-      _ -> fail $ "Could not determine arc direction for " ++ src ++ " -> " ++ tgt
+
+    let inh = if (not isColored) && isInhibited && isHighLevel 
+                then changeInhibitor inh_aux
+                else inh_aux
+
+
+    let isHighLevelSrc = isJust srcVar
+        isHighLevelTgt = isJust tgtVar
+        isSrcPlace = isHighLevelSrc || src `elem` placeNames
+        isTgtPlace = isHighLevelTgt || tgt `elem` placeNames
+
+    let arcDirection True False = Just (tgt, \s t w -> (t, Arc s w inh, True))
+        arcDirection False True = Just (src, \s t w -> (s, Arc t w inh, False))
+        arcDirection _     _     = Nothing
+
+    case arcDirection isSrcPlace isTgtPlace of
+      Just (fixedEnd, buildArc) -> do
+        let expandVar v =
+              case Map.lookup v varMap of
+                Just n -> [1..n]
+                Nothing -> []
+
+        case (isHighLevel, srcVar, tgtVar) of
+          (True, Just pv, _) | isSrcPlace -> do
+              let indices = expandVar pv
+              return [ buildArc (src ++ "_" ++ show i)
+                                 (tgt ++ "_" ++ pv ++ "_" ++ show i)
+                                 (extendWeight weight (pv ++ "_" ++ show i)) | i <- indices ]
+
+          (True, _, Just pv) | isTgtPlace -> do
+              let indices = expandVar pv
+              return [ buildArc (src ++ "_" ++ pv ++ "_" ++ show i)
+                                 (tgt ++ "_" ++ show i)
+                                 (extendWeight weight (pv ++ "_" ++ show i)) | i <- indices ]
+
+          (True, Nothing, Nothing) -> do
+              let expanded = [ (v, i) | (v, maxV) <- Map.toList varMap, i <- [1..maxV] ]
+              if isSrcPlace then
+                  return [ buildArc src
+                                     (tgt ++ "_" ++ v ++ "_" ++ show i)
+                                     (extendWeight weight (v ++ "_" ++ show i))
+                         | (v, i) <- expanded ]
+              else if isTgtPlace then
+                  return [ buildArc (src ++ "_" ++ v ++ "_" ++ show i)
+                                     tgt
+                                     (extendWeight weight (v ++ "_" ++ show i))
+                         | (v, i) <- expanded ]
+              else
+                  fail $ "Could not determine arc direction for " ++ src ++ " -> " ++ tgt
+
+          _ -> return [buildArc src tgt weight]
+
+      Nothing -> fail $ "Could not determine arc direction for " ++ src ++ " -> " ++ tgt
+
 
 extractColorKeys :: [Map.Map String Int] -> Set.Set String
 extractColorKeys = Set.unions . map Map.keysSet
@@ -273,12 +408,18 @@ collectColors net marking =
 
     in Set.unions [initColors, arcColors, inhColors]
 
+hasBothIO :: (String, [Arc], [Arc]) -> Bool
+hasBothIO (_, ins, outs) = not (null ins) && not (null outs)
+
 parseNet :: Parser PetriNet
 parseNet = do
-    netType <- option (NetType False False False) (try parseNetType)
+    netType <- option (NetType False False False False False) (try parseNetType)
+    variables <- option (Variables (Map.fromList [])) (try parseVariables)
+    
     string "~PLACES"
     spacesOrComments
-    placesListWithTokens <- many (parsePlace (isColored netType))
+    placesGroups <- many (parsePlace (isColoredOriginal netType) (isHighLevel netType) variables)
+    let placesListWithTokens = concat placesGroups
 
     let placesList = [(name, place) | (name, place, _, _) <- placesListWithTokens]
         marking = if isColored netType
@@ -287,25 +428,28 @@ parseNet = do
 
     string "~TRANSITIONS"
     spacesOrComments
-    transitionsList <- many (parseTransition (isTimed netType))
+    transitionGroups <- many (parseTransition (isTimed netType) (isHighLevel netType) variables)
+    let transitionsList = concat transitionGroups
     spacesOrComments
     string "~ARCS"
     spacesOrComments
 
     let placeNames = map (\(n, _) -> n) placesList
         transitionNames = map fst transitionsList
-    arcs <- many (parseArc (isColored netType) (isInhibited netType) placeNames transitionNames)
+    
+    arcs <- concat <$> many (parseArc (isColoredOriginal netType) (isInhibited netType) (isHighLevel netType) variables placeNames transitionNames)
 
     -- Organize parsed data
     let groupedTransitions = foldr groupArcs [] arcs
+    let filteredTransitions =  filter hasBothIO groupedTransitions
     let timeMap = Map.fromList [(t, time) | (t, Just time) <- transitionsList]
     let transitionsMap = [(t, Transition ins outs (Map.lookup t timeMap))
-                     | (t, ins, outs) <- groupedTransitions]
+                     | (t, ins, outs) <- filteredTransitions]
     let colorMap = case marking of
                     Right cmap -> cmap
                     Left _     -> Map.empty
         colors = Set.toList (collectColors (Net placesList transitionsMap) colorMap)
-    return $ PetriNet (Net placesList transitionsMap) (M0 marking) netType colors
+    return $ PetriNet (Net placesList transitionsMap) (M0 marking) netType colors variables
 
 groupArcs :: (String, Arc, Bool) -> [(String, [Arc], [Arc])] -> [(String, [Arc], [Arc])]
 groupArcs (t, arc, isInput) [] = [(t, [arc | isInput], [arc | not isInput])]
@@ -333,7 +477,7 @@ processTemplate text netType = solve text
       | otherwise = t
 
 checkCondition :: T.Text -> NetType -> Bool
-checkCondition cond (NetType colored timed inhibited) =
+checkCondition cond (NetType colored timed inhibited _ _) =
     let c = T.toUpper cond
     in case c of
          "COLORED"               -> colored
@@ -368,7 +512,7 @@ generateGoCommand fileName = do
         Left err -> do
             putStrLn "Failed to parse file:"
             print err
-        Right (PetriNet _ _ netType _) -> do
+        Right (PetriNet _ _ netType _ _) -> do
             let templateFile = "template.txt"
             exists <- doesFileExist templateFile
             if not exists

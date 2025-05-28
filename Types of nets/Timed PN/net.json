@@ -19,7 +19,8 @@
                     "place": "p3",
                     "value": 1
                 }],
-                "time": 2
+                "maxTime":5,
+                "minTime":3
             }
     }
     },

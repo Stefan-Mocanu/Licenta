@@ -25,7 +25,8 @@ type Arc struct {
 type Transition struct {
 	INPUT  []Arc `json:"input"`
 	OUTPUT []Arc `json:"output"`
-	<<TIMED,TIME   int   `json:"TIME"`>>
+	<<TIMED,MINTIME   int   `json:"minTime"`
+	MAXTIME int   `json:"maxTime"`>>
 }
 type Marking struct {
 	<<NOT COLORED,CONTENT map[string]int `json:"content"`>>
@@ -73,9 +74,14 @@ func readNetFromJSONFile() (Net, Marking) {
 	}
 
 	<<TIMED,for t, _ := range net.TRANSITIONS {
-		if net.TRANSITIONS[t].TIME < 1 {
+		if net.TRANSITIONS[t].MINTIME < 1 {
 			temp := net.TRANSITIONS[t]
-			temp.TIME = 1
+			temp.MINTIME = 1
+			net.TRANSITIONS[t] = temp
+		}
+		if net.TRANSITIONS[t].MAXTIME < 1 {
+			temp := net.TRANSITIONS[t]
+			temp.MAXTIME = 1
 			net.TRANSITIONS[t] = temp
 		}
 	}>>
@@ -207,9 +213,17 @@ func main() {
 			current_marking = activateTransition(net, transition, markings[len(markings)-1])
 			fmt.Println("Started transition", transition, "with id:", startId)
 			markings = append(markings, current_marking)
+			mini := net.TRANSITIONS[transition].MINTIME
+			maxi := net.TRANSITIONS[transition].MAXTIME
+			var transition_time int
+			if mini == maxi {
+				transition_time = mini
+			} else {
+				transition_time = rand.Intn(maxi-mini) + mini
+			}
 			activeTransitions = append(activeTransitions, tuple{
 				transition: transition,
-				time:       net.TRANSITIONS[transition].TIME,
+				time:       transition_time,
 				id:         startId,
 			}) 
 			startId++
