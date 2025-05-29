@@ -14,8 +14,8 @@ T1 [time=(2,5)]
 T2 [time=(1,2)]
 
 ~ARCS
-P1 -> T1 [weight=1]
-P2 -> T1 [weight=2]
-T1 -> P3 [weight=3] [inh=4]
-PF<N> -> T2 [weight=2] [inh=4]
-T2 -> P1 [weight=4]
+P1 -> T1 [weight={blue:4,red:7}]
+P2 -> T1 [weight={blue:66,red:5,yellow:8}]
+T1 -> P3 [weight={blue:66,red:5,yellow:8}] [inh={blue:66,red:5,yellow:8}]
+PF<N> -> T2 [weight={blue:66,red:5,yellow:8}] [inh={blue:66,red:5,yellow:8}]
+T2 -> P1 [weight={blue:66,red:5,yellow:8}]

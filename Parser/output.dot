@@ -1,0 +1,23 @@
+digraph PetriNet {
+  rankdir=LR;
+  node [shape=circle, width=0.5, style=filled, fillcolor=lightgray];
+  PF;
+  P1;
+  P2;
+  P3;
+  node [shape=rectangle, width=0.1, height=0.6, style=filled, fillcolor=black];
+  T2 [xlabel="T2", label=""];
+  T1 [xlabel="T1", label=""];
+  subgraph cluster_N {
+    style=filled;
+    color=lightgrey;
+    node [style=filled,color=white];
+    PF; T2;
+    label = "N";
+  }
+  P1 -> T1 [label=<{blue:4,red:7}>, headport=w];
+  P2 -> T1 [label=<{blue:66,red:5,yellow:8}>, headport=w];
+  T1 -> P3 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0"><TR><TD>{blue:66,red:5,yellow:8}</TD></TR><TR><TD><FONT POINT-SIZE="10">inh={blue:66,red:5,yellow:8}</FONT></TD></TR></TABLE>>, tailport=e];
+  PF -> T2 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0"><TR><TD>{blue:66,red:5,yellow:8}</TD></TR><TR><TD><FONT POINT-SIZE="10">inh={blue:66,red:5,yellow:8}</FONT></TD></TR></TABLE>>, headport=w];
+  T2 -> P1 [label=<{blue:66,red:5,yellow:8}>, tailport=e];
+}

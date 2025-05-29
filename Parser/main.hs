@@ -1,10 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+module Main where
+
 import GHC.Generics (Generic)
 import Data.Aeson (ToJSON, encode, toJSON, object, (.=))
 import qualified Data.ByteString.Lazy.Char8 as B
-import Text.Parsec
+import Text.Parsec 
 import Text.Parsec.String (Parser)
 import Control.Monad (void)
 import Data.Char (isAlpha, isAlphaNum)
@@ -20,6 +22,8 @@ import Data.Maybe (fromMaybe, isJust)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Debug.Trace
+import Parser.GraphViz
+import Parser.DotGen
 
 data NetType = NetType {
     isColored   :: Bool,
@@ -141,9 +145,6 @@ instance ToJSON TimeInterval where
     toJSON (TimeInterval minTime maxTime) = object [
         "minTime" .=  minTime,
         "maxTime" .= maxTime]
-
-spacesOrComments :: Parser ()
-spacesOrComments = void $ many (void (oneOf " \t\n") <|> void (char '/' *> manyTill anyChar newline))
 
 
 parsePlace :: Bool -> Bool -> Variables -> Parser [(String, Place, Int, Maybe (Map.Map String Int))]
@@ -523,10 +524,19 @@ generateGoCommand fileName = do
                     TIO.writeFile "output.go" output
                     putStrLn "Go file generated successfully as output.go"
 
+generateGraphviz :: FilePath -> IO ()
+generateGraphviz fileName = do
+    content <- readFile fileName
+    case parse parseGraphViz fileName content of
+        Left err -> print err
+        Right gv -> TIO.writeFile "output.dot" (T.pack (graphVizToDot gv))
+
+    
 main :: IO ()
 main = do
     args <- getArgs
     case args of
         ["compile", fileName] -> compileCommand fileName
         ["generate-go", fileName] -> generateGoCommand fileName
+        ["graphviz", fileName] -> generateGraphviz fileName
         _ -> putStrLn "Usage: petricli (compile|generate-go) filename" >> exitFailure
