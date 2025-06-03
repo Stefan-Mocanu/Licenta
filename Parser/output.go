@@ -192,9 +192,15 @@ func main() {
 			markings = append(markings, current_marking)
 			mini := net.TRANSITIONS[transition].MINTIME
 			maxi := net.TRANSITIONS[transition].MAXTIME
+			var transition_time int
+			if mini == maxi {
+				transition_time = mini
+			} else {
+				transition_time = rand.Intn(maxi-mini) + mini
+			}
 			activeTransitions = append(activeTransitions, tuple{
 				transition: transition,
-				time:       rand.Intn(maxi-mini) + mini,
+				time:       transition_time,
 				id:         startId,
 			}) 
 			startId++

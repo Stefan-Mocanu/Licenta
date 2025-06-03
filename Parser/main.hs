@@ -152,59 +152,58 @@ parsePlace isColored isHighLevel (Variables varMap) = do
     name <- many1 alphaNum
     nameSuffix <- optionMaybe (between (char '<') (char '>') (many1 alphaNum))
     spaces
-    tokenCount <- optionMaybe (try (if isColored then parseColoredTokens else parseSimpleTokens))
+    tokenCount <- optionMaybe (try (if isColored 
+                                    then parseColoredTokens 
+                                    else parseSimpleTokens))
     spacesOrComments
 
     case nameSuffix of
         Just varName ->
             case Map.lookup varName varMap of
                 Just n ->
-                    let expanded = [ 
-                            if isColored 
-                                then
-                                    let baseTokens = case tokenCount of
-                                                        Just (Right cmap) -> cmap
-                                                        _ -> Map.empty
-                                        extendedTokens = Map.insert (varName ++ "_" ++ show i) 1 baseTokens
-                                    in (name ++ "_" ++ show i, Place 0, 0, Just extendedTokens)
-                                else
-                                    let baseCount = case tokenCount of
-                                                        Just (Left c) -> c
-                                                        _ -> 0
-                                    in (name ++ "_" ++ show i, Place 0, baseCount, Just (Map.fromList [((varName ++ "_" ++ show i), 1),("token", baseCount)]))
-                          | i <- [1 .. n] ]
+                    let expanded = [ case tokenCount of
+                                        Just (Right cmap) ->  -- Colored
+                                            let extendedTokens = Map.insert (varName ++ "_" ++ show i) 1 cmap
+                                            in (name ++ "_" ++ show i, Place 0, 0, Just extendedTokens)
+                                        Just (Left count) -> -- Simple
+                                             (name ++ "_" ++ show i, Place 0, count, Just (Map.fromList [("token", count)]))
+                                        Nothing ->  -- No tokens specified
+                                            (name ++ "_" ++ show i, Place 0, 0, Nothing)
+                                   | i <- [1 .. n] ]
                     in return expanded
                 Nothing -> fail $ "Variable " ++ varName ++ " not found in Variables map"
-        Nothing ->
-            let tokenValue = case tokenCount of
-                    Just (Left count) -> count
-                    _ -> 0
-                colorTokens = case tokenCount of
-                    Just (Right cmap) -> Just cmap
-                    _ -> Nothing
-            in return [(name, Place 0, tokenValue, Just (Map.fromList [("token",tokenValue)]))]
+        Nothing -> 
+            case tokenCount of
+                Just (Left count) -> return [(name, Place 0, count, Just (Map.fromList [("token", count)]))]
+                Just (Right cmap) -> return [(name, Place 0, 0, Just cmap)]
+                Nothing           -> return [(name, Place 0, 0, Nothing)]
+
 
 
 -- [tokens=2]
 parseSimpleTokens :: Parser (Either Int (Map.Map String Int))
 parseSimpleTokens = do
-    _ <- char '[' >> string "tokens="
+    _ <- lexeme (char '[')
+    _ <- lexeme (string "tokens=")
     n <- many1 digit
-    _ <- char ']'
+    _ <- lexeme (char ']')
     return $ Left (read n)
 
 -- [tokens={red=4,blue=10}]
 parseColoredTokens :: Parser (Either Int (Map.Map String Int))
 parseColoredTokens = do
-    _ <- char '[' >> string "tokens={"
+    _ <- lexeme (char '[')
+    _ <- lexeme (string "tokens=")
+    _ <- lexeme (char '{')
     pairs <- sepBy parseColorPair (char ',')
-    _ <- string "}]"
+    _ <- lexeme (char '}')
+    _ <- lexeme (char ']')
     return $ Right (Map.fromList pairs)
 
 parseColorPair :: Parser (String, Int)
 parseColorPair = do
     color <- many1 alphaNum
-    _ <- char '='
+    _ <- char ':'
     n <- many1 digit
     return (color, read n)
 

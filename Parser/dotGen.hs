@@ -12,7 +12,7 @@ graphVizToDot gv =
     simplePlaces = Map.findWithDefault [] "simple" (places gv)
     allHLVars = filter (/= "simple") (Map.keys (places gv))
     hlPlacesByVar = \v -> Map.findWithDefault [] v (places gv)
-    hlTransByVar = \v -> [ t | (t, _) <- Map.findWithDefault [] v (transitionsGV gv) ]
+    hlTransByVar = \v -> [ t++time | (t, time) <- Map.findWithDefault [] v (transitionsGV gv) ]
 
     -- Generate node declarations
     placesDecls names = unlines $

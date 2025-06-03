@@ -1,21 +1,30 @@
 ~NET_TYPE
-TIMED INHIBITED HIGH_LEVEL
+TIMED INHIBITED HIGH_LEVEL COLORED
 ~VARIABLES
-N = 3
-MR = 2
+N = 2   // Number of clients
 ~PLACES
-P1 [tokens=4]  // Input
-P2 [tokens=2]  // Buffer
-P3 [tokens=0]  // Output
-PF<N> [tokens=5]
+ClientIdle<N> [tokens={blue:1}]
+RequestSent<N> [tokens={}]
+ServerIdle [tokens={green:2}]
+Processing<N> [tokens={}]
+ResponseReady<N> [tokens={}]
+ClientReceived<N> [tokens={}]
 
 ~TRANSITIONS
-T1 [time=(2,5)]
-T2 [time=(1,2)]
+SendRequest [time=(1,2)]
+ProcessRequest [time=(2,4)]
+SendResponse [time=(1,2)]
+ReceiveResponse [time=(1,2)]
 
 ~ARCS
-P1 -> T1 [weight={blue:4,red:7}]
-P2 -> T1 [weight={blue:66,red:5,yellow:8}]
-T1 -> P3 [weight={blue:66,red:5,yellow:8}] [inh={blue:66,red:5,yellow:8}]
-PF<N> -> T2 [weight={blue:66,red:5,yellow:8}] [inh={blue:66,red:5,yellow:8}]
-T2 -> P1 [weight={blue:66,red:5,yellow:8}]
+ClientIdle<N> -> SendRequest [weight={blue:1}] [inh={blue:1}]
+SendRequest -> RequestSent<N> [weight={blue:1}]
+RequestSent<N> -> ProcessRequest [weight={blue:1}]
+ServerIdle -> ProcessRequest [weight={green:1}]
+ProcessRequest -> Processing<N> [weight={blue:1}]
+ProcessRequest -> ServerIdle [weight={green:1}]
+Processing<N> -> SendResponse [weight={blue:1}]
+SendResponse -> ResponseReady<N> [weight={blue:1}]
+ResponseReady<N> -> ReceiveResponse [weight={blue:1}]
+ReceiveResponse -> ClientReceived<N> [weight={blue:1}]
+ReceiveResponse -> ClientIdle<N> [weight={blue:1}]

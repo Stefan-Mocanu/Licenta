@@ -1,0 +1,2 @@
+1 despre utilitatea petri nets
+2 despre compilatoare existente
