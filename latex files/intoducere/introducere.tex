@@ -7,7 +7,8 @@
 \usepackage[pdf]{graphviz}
 \usepackage{graphicx}
 \usepackage{listings}
-
+\usepackage{listings}
+\usepackage{caption}
 \newtheorem{definition}{Definition}
 \begin{document}
 \section{Introduction}
@@ -161,7 +162,7 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
         The final implementation of the parser program has a CLI. The interface has three commands: \texttt{compile}, \texttt{generate-go} and \texttt{graphviz}. Every command takes as argument a file written in the format described in the next subsections. In the further sections of this chapter, the behavior and implementation details will be described.
         \subsubsection{Language}
             To support the modeling of various types of Petri Nets in a flexible and extensible way, I designed a custom domain-specific language called Petri Net Description Language (PNDL). This language is used to define Petri Nets in a human-readable and modular format, supporting extensions such as colored tokens, timing constraints, inhibitor arcs, and high-level parameterized components. The syntax of PNDL is intentionally minimal and declarative, using sections like \texttt{NET\_TYPE}, \texttt{VARIABLES}, \texttt{PLACES}, \texttt{TRANSITIONS}, and \texttt{ARCS} to describe the structure and behavior of the net. 
-            Figure~\ref{PNDLsyntax} presents the core syntax of PNDL, along with inline comments that clarify the semantics and conditional requirements for each section based on the net type. This format serves as the input to the compiler I developed, which translates PNDL specifications into JSON and Graphviz representations.      
+            Figure~\ref{fig:PNDLsyntax} presents the core syntax of PNDL, along with inline comments that clarify the semantics and conditional requirements for each section based on the net type. This format serves as the input to the compiler I developed, which translates PNDL specifications into JSON and Graphviz representations.      
         \subsubsection{Compile command}
         To interpret a PNDL file, the \texttt{compile} command invokes a series of functions that parse its contents using the \texttt{Parsec} module. These functions structure the parsed data into custom Haskell objects, which are then translated into JSON, depending on the type of Petri Net being described. The compilation process supports several Petri Net extensions, as follows:
 
@@ -221,8 +222,8 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
 
             All code variants are embedded in the template using the \texttt{<<condition, code>>} syntax. During generation, the system performs a textual transformation, resolving all such blocks based on the current Petri Net type. This ensures that the final Go program is minimal, readable, and free of unused logic paths.
         
-        \subsubsection{GraphViz}
-        \subsection{GraphViz Generation}
+        
+        \subsubsection{GraphViz Generation}
             The GraphViz module of the project is responsible for producing a .dot representation of a Petri Net. Its modus operandi closely mirrors that of the \texttt{toJSON} Parsec-based parser. It also relies on a Parsec parser to interpret the PNDL input and generate the corresponding arguments for the \texttt{DOT} syntax. The structure of the parser and its logic for handling \texttt{COLORED}, \texttt{TIMED}, and \texttt{INHIBITED} nets are analogous to those used in the JSON generator.
             
             The key distinction arises when dealing with \texttt{HIGH-LEVEL} nets. In this case, high-level constructs such as variable-bound places and transitions are not expanded into all possible concrete instances. Instead, they are grouped according to the variable on which they depend. Each such group is rendered as a distinct subgraph (or \texttt{subgraph cluster}) within the overall DOT graph. This visual separation serves to highlight the parametric nature of the net and the dependencies of each group on its associated variable.
@@ -230,13 +231,27 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
             All remaining non-parametric (simple) places and transitions are placed in a special group labeled \texttt{simple}, representing components independent of any variable. This structured organization enhances readability and provides insight into the modular, parameterized design of high-level nets.
 
             In the generated GraphViz graph, places and transitions are visually distinguished using different node formatting styles. Places are represented as ellipses, while transitions are drawn as rectangles. This differentiation aligns with common Petri Net visualization conventions and improves the interpretability of the diagram.
-    \bibliographystyle{IEEEtran}
-    \bibliography{citations}
+    
 
+    \subsection{Testing the Limits of the Tool}   
+        To explore the performance boundaries and correctness of the Petri Net toolchain, a series of stress tests were designed and executed. These tests targeted both the parser and the backend code generation components.
+        \subsubsection{Parametrized Expansion Overhead}
+            One approach for evaluating scalability involves defining a \textbf{High-Level Petri Net} with an extremely large parameter. The network described in Listing~\ref{fig:limit1} models a client-server interaction, parameterized over $N = 1{,}000{,}000$ clients, and incorporates \texttt{TIMED}, \texttt{INHIBITED}, \texttt{COLORED}, and \texttt{HIGH\_LEVEL} features.
+
+            Execution of this definition resulted in the operating system terminating the process due to excessive memory consumption or CPU overload. This indicates that the tool currently encounters performance bottlenecks when expanding high-cardinality parametrized definitions. The corresponding error is shown in Figure~\ref{fig:error}. The exact value of $N$ that triggers this error varies depending on the machine's hardware specifications.
+
+        \subsubsection{Integer Overflow in Go Backend}
+            A separate test focused on identifying numeric limitations in the backend code generation. The network described in Listing~\ref{fig:limit2} utilizes large token weights to provoke overflow behavior in the Go language implementation.
+
+            This net successfully compiles and passes through the parser. However, execution of the generated Go code results in overflow, as the default integer type on the target system is a 64-bit signed integer, with a maximum representable value of $2^{63} - 1$. This exposes a limitation in the type safety of the backend generator and suggests a need for improved handling of numeric ranges.
+
+            Figure~\ref{fig:markings} shows the behaviors of the Go script for the first 10 iterations(plus the starting marking) of the net. We can observe how the places sometimes have negative values, a clear sign of integer overflow.
+\bibliographystyle{IEEEtran}
+\bibliography{citations}
 \section{Appendix}
     \begin{figure}[hbtp]
         \caption{PNDL syntax}
-        \label{PNDLsyntax}
+        \label{fig:PNDLsyntax}
         \begin{lstlisting}[language=C,frame=single]
 ~NET_TYPE
 COLORED | TIMED | INHIBITED | HIGH_LEVEL   
@@ -275,4 +290,34 @@ Source -> Target [weight=value] [inh=value]
 //the <Variable> of the place needs to be present
         \end{lstlisting}
     \end{figure}
+    \lstset{
+        breaklines=true,
+        basicstyle=\ttfamily\small,
+        frame=single,
+        captionpos=b
+      }
+      
+      \begin{figure}[p]  % [p] for page of floats
+        \centering
+        \lstinputlisting[caption={Code generating memory errors}, label={fig:limit1}]{limit1.txt}
+      \end{figure}
+
+      \begin{figure}[htbp]
+        \centering
+        \includegraphics[width=\linewidth/2]{Error_message.png}  % adjust width as needed
+        \caption{The error message}
+        \label{fig:error}
+      \end{figure}
+      
+      \begin{figure}[p]  % [p] for page of floats
+        \centering
+        \lstinputlisting[caption={Code generating memory errors}, label={fig:limit2}]{limit2.txt}
+      \end{figure}
+
+      \begin{figure}[htbp]
+        \centering
+        \includegraphics[width=\linewidth/3 *2]{Marking.png}  % adjust width as needed
+        \caption{The generated markings by the net in Listing~\ref{fig:limit2}}
+        \label{fig:markings}
+      \end{figure}
 \end{document}

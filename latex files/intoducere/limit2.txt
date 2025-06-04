@@ -1,0 +1,11 @@
+~PLACES
+P1 [tokens=1000000]
+P2 [tokens=0]
+~TRANSITIONS
+aa
+cc
+~ARCS
+P1 -> T1 [weight=1]
+T1 -> P2 [weight=9223372036854775807]
+P2 -> T2 [weight=1]
+T2 -> P1 [weight=9223372036854775807]

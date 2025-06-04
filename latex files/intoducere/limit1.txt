@@ -1,0 +1,30 @@
+~NET_TYPE
+TIMED INHIBITED HIGH_LEVEL COLORED
+~VARIABLES
+N = 1000000   // Number of clients
+~PLACES
+ClientIdle<N> [tokens={blue:1}]
+RequestSent<N> [tokens={}]
+ServerIdle [tokens={green:2}]
+Processing<N> [tokens={}]
+ResponseReady<N> [tokens={}]
+ClientReceived<N> [tokens={}]
+
+~TRANSITIONS
+SendRequest [time=(1,2)]
+ProcessRequest [time=(2,4)]
+SendResponse [time=(1,2)]
+ReceiveResponse [time=(1,2)]
+
+~ARCS
+ClientIdle<N> -> SendRequest [weight={blue:1}] [inh={blue:1}]
+SendRequest -> RequestSent<N> [weight={blue:1}]
+RequestSent<N> -> ProcessRequest [weight={blue:1}]
+ServerIdle -> ProcessRequest [weight={green:1}]
+ProcessRequest -> Processing<N> [weight={blue:1}]
+ProcessRequest -> ServerIdle [weight={green:1}]
+Processing<N> -> SendResponse [weight={blue:1}]
+SendResponse -> ResponseReady<N> [weight={blue:1}]
+ResponseReady<N> -> ReceiveResponse [weight={blue:1}]
+ReceiveResponse -> ClientReceived<N> [weight={blue:1}]
+ReceiveResponse -> ClientIdle<N> [weight={blue:1}]

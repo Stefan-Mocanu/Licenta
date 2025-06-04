@@ -91,14 +91,14 @@ func readNetFromJSONFile() (Net, Marking) {
 
 func compareArc(marking Marking, arc Arc) bool {
 	<<NOT COLORED and NOT INHIBITED,return (marking.CONTENT[arc.PLACE] < arc.VALUE)>>
-	<<NOT COLORED AND INHIBITED,return (marking.CONTENT[arc.PLACE] < arc.VALUE) || (arc.INHIBITOR < marking.CONTENT[arc.PLACE])>>
+	<<NOT COLORED AND INHIBITED,return (marking.CONTENT[arc.PLACE] >= arc.VALUE) || (arc.INHIBITOR < marking.CONTENT[arc.PLACE])>>
 	<<COLORED AND INHIBITED,ok := false
 	for color, _ := range colors {
 		_, verify := arc.VALUE[color]
 		if !verify {
 			continue
 		}
-		if (marking.CONTENT[arc.PLACE][color] < arc.VALUE[color]) || (arc.INHIBITOR[color] < marking.CONTENT[arc.PLACE][color]) {
+		if (marking.CONTENT[arc.PLACE][color] >= arc.VALUE[color]) || (arc.INHIBITOR[color] < marking.CONTENT[arc.PLACE][color]) {
 			ok = true
 			break
 		}
@@ -110,7 +110,7 @@ func compareArc(marking Marking, arc Arc) bool {
 		if !verify {
 			continue
 		}
-		if (marking.CONTENT[arc.PLACE][color] < arc.VALUE[color]){
+		if (marking.CONTENT[arc.PLACE][color] >= arc.VALUE[color]){
 			ok = true
 			break
 		}

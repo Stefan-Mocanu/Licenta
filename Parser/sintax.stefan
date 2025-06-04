@@ -1,7 +1,7 @@
 ~NET_TYPE
 TIMED INHIBITED HIGH_LEVEL COLORED
 ~VARIABLES
-N = 2   // Number of clients
+N = 1000000   // Number of clients
 ~PLACES
 ClientIdle<N> [tokens={blue:1}]
 RequestSent<N> [tokens={}]

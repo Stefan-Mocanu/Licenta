@@ -1,0 +1,1 @@
+{"m0":{"content":{"P1":1000000,"P2":0}},"net":{"places":["P1","P2"],"transitions":{"T1":{"input":[{"place":"P1","value":1}],"output":[{"place":"P2","value":9223372036854775807}]},"T2":{"input":[{"place":"P2","value":100}],"output":[{"place":"P1","value":9223372036854775807}]}}},"netType":{"isColored":false,"isHighLevel":false,"isInhibited":false,"isTimed":false},"variables":{}}

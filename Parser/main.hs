@@ -243,6 +243,7 @@ parseNetType = do
 
 parseTime :: Parser TimeInterval
 parseTime = do
+    spaces
     _ <- char '[' >> spaces >> string "time=" >> char '('
     minT <- many1 digit
     _ <- char ',' >> spaces
@@ -253,7 +254,6 @@ parseTime = do
 parseTransition :: Bool -> Bool -> Variables -> Parser [(String, Maybe (Int, Int))]
 parseTransition isTimed isHighLevel (Variables varMap) = do
     name <- many1 alphaNum
-    spaces
     time <- if isTimed then optionMaybe parseTime else return Nothing
     newline
     let interval = fmap (\(TimeInterval minT maxT) -> (minT, maxT)) time
@@ -503,7 +503,7 @@ compileCommand fileName = do
             print err
         Right petriNet -> do
             putStrLn "Parsed successfully:"
-            B.putStrLn (encode petriNet)
+            B.writeFile "output.json" (encode petriNet)
 
 generateGoCommand :: FilePath -> IO ()
 generateGoCommand fileName = do
