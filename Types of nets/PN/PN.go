@@ -38,7 +38,7 @@ type JSONInput struct {
 }
 
 func readNetFromJSONFile() (Net, Marking) {
-	dataJson, err := os.ReadFile("net.json")
+	dataJson, err := os.ReadFile("limits1.json")
 	check(err)
 	var data JSONInput
 	json.Unmarshal(dataJson, &data)
@@ -62,7 +62,7 @@ func readNetFromJSONFile() (Net, Marking) {
 }
 
 func compareArc(marking Marking, arc Arc) bool {
-	return marking.CONTENT[arc.PLACE] < arc.VALUE
+	return marking.CONTENT[arc.PLACE] > arc.VALUE
 }
 
 func getViableTransitions(net Net, marking Marking) []string {
@@ -107,12 +107,14 @@ func main() {
 	fmt.Println(current_marking)
 	var transitions []string
 	transitions = getViableTransitions(net, markings[0])
-	for len(transitions) != 0 {
+	step := 0
+	for len(transitions) != 0 && step <= 10 {
 		transition := selectTransition(transitions)
 		current_marking = activateTransition(net, transition, markings[len(markings)-1])
 		markings = append(markings, current_marking)
 		fmt.Println(markings[len(markings)-1])
 		transitions = getViableTransitions(net, markings[len(markings)-1])
+		step++
 	}
 	fmt.Println("There are no more viable transitions")
 }
