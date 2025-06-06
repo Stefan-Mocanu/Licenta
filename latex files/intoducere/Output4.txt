@@ -1,0 +1,84 @@
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:0 yellow:0] Producer:map[blue:2 green:0 yellow:2]]}
+TIME:  1
+Started transition Produce with id: 0 with duration 2
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:0 yellow:0] Producer:map[blue:1 green:0 yellow:1]]}
+TIME:  2
+Started transition Produce with id: 1 with duration 3
+Ended transtition Produce with id: 0
+Ended transtition  with id: 0
+{map[Buffer:map[blue:0 green:1 yellow:0] Consumer:map[blue:0 green:0 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  3
+Started transition Consume with id: 2 with duration 3
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:0 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  4
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:0 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  5
+Ended transtition Consume with id: 2
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:1 yellow:0] Producer:map[blue:1 green:0 yellow:1]]}
+TIME:  6
+Started transition Produce with id: 3 with duration 2
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:1 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  7
+Ended transtition Produce with id: 3
+{map[Buffer:map[blue:0 green:1 yellow:0] Consumer:map[blue:0 green:1 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  8
+Started transition Consume with id: 4 with duration 3
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:1 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  9
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:1 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  10
+Ended transtition Consume with id: 4
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:2 yellow:0] Producer:map[blue:1 green:0 yellow:1]]}
+TIME:  11
+Started transition Produce with id: 5 with duration 2
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:2 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  12
+Ended transtition Produce with id: 5
+{map[Buffer:map[blue:0 green:1 yellow:0] Consumer:map[blue:0 green:2 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  13
+Started transition Consume with id: 6 with duration 3
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:2 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  14
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:2 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  15
+Ended transtition Consume with id: 6
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:3 yellow:0] Producer:map[blue:1 green:0 yellow:1]]}
+TIME:  16
+Started transition Produce with id: 7 with duration 3
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:3 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  17
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:3 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  18
+Ended transtition Produce with id: 7
+{map[Buffer:map[blue:0 green:1 yellow:0] Consumer:map[blue:0 green:3 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  19
+Started transition Consume with id: 8 with duration 3
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:3 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  20
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:3 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  21
+Ended transtition Consume with id: 8
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:4 yellow:0] Producer:map[blue:1 green:0 yellow:1]]}
+TIME:  22
+Started transition Produce with id: 9 with duration 2
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:4 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  23
+Ended transtition Produce with id: 9
+{map[Buffer:map[blue:0 green:1 yellow:0] Consumer:map[blue:0 green:4 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  24
+Started transition Consume with id: 10 with duration 3
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:4 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  25
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:4 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  26
+Ended transtition Consume with id: 10
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:5 yellow:0] Producer:map[blue:1 green:0 yellow:1]]}
+TIME:  27
+Started transition Produce with id: 11 with duration 3
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:5 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  28
+{map[Buffer:map[blue:0 green:0 yellow:0] Consumer:map[blue:0 green:5 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+TIME:  29
+Ended transtition Produce with id: 11
+{map[Buffer:map[blue:0 green:1 yellow:0] Consumer:map[blue:0 green:5 yellow:0] Producer:map[blue:0 green:0 yellow:0]]}
+There are no more viable transitions

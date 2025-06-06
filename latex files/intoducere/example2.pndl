@@ -1,0 +1,17 @@
+~NET_TYPE
+INHIBITED
+~PLACES
+Producer [tokens=1]
+Consumer [tokens=1]
+Buffer [tokens=0]
+
+~TRANSITIONS
+Produce
+Consume
+
+~ARCS
+Producer -> Produce [weight=1]
+Produce -> Buffer [weight=1]    
+Buffer -> Consume [weight=1]
+Consume -> Consumer [weight=1] [inh=5]
+Consume -> Producer [weight=1]

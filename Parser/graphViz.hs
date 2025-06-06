@@ -136,7 +136,7 @@ skipNetType = do
 parseGraphViz :: Parser GraphViz
 parseGraphViz = do
     skipNetType
-    vars <- parseVariablesGV
+    vars <- option (Map.fromList []) (try parseVariablesGV)
     pls <- parsePlacesGV vars
     let places = reverseMapIgnoreKey "" pls
     trans <- parseTransitionsGV 

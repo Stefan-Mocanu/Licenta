@@ -9,6 +9,8 @@
 \usepackage{listings}
 \usepackage{listings}
 \usepackage{caption}
+\usepackage{url}
+
 \newtheorem{definition}{Definition}
 \begin{document}
 \section{Introduction}
@@ -107,7 +109,26 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
 
 
     \subsection{Current State of the Specific Subfield}
-    ********TBAaaaa
+
+        \subsubsection{Petri Net Markup Language (PNML)}
+
+        The \textit{Petri Net Markup Language} (PNML) was introduced as an attempt to standardize the representation of Petri Nets in a structured, tool-independent way. As described by Weber and Kindler~\cite{weber2003petri}, PNML defines an XML-based format designed to encode various classes of Petri Nets, including Place/Transition nets, Colored Petri Nets, and more. It aims to facilitate tool interoperability and model exchange between different Petri Net applications and environments.
+
+        To date, PNML remains the closest the Petri Net research community has to a widely accepted standard for representing and exchanging Petri Net models. Its structure allows for extensibility and is supported by several modeling tools and academic frameworks. However, due to the complexity and verbosity inherent in XML, human readability and direct manipulation are often limited without dedicated graphical interfaces or tool support.
+
+        \subsubsection{Existing Tools and Modeling Platforms}
+
+        Numerous tools exist for modeling, simulating, and analyzing Petri Nets. Notable platforms include:
+
+        \begin{itemize}
+            \item \textbf{CPN Tools}\cite{verbeek2021cpn}, is a widely-used environment for Colored Petri Nets. It supports graphical modeling and powerful simulation capabilities tailored to high-level Petri Nets.
+            \item \textbf{Petrinet Editor}\cite{app10217662}, offers a browser-based modeling interface for basic and extended Petri Net types, with export and visualization support.
+            \item A comprehensive and regularly updated list of Petri Net tools is maintained by the University of Hamburg\cite{tgi_petri_tools}. This database includes editors, analyzers, simulators, and verification tools for a wide spectrum of Petri Net variants.
+        \end{itemize}
+
+        Despite the variety of existing solutions, many tools target specific net types or modeling scenarios and may lack support for extensible, user-defined features such as parametric expansion, custom net transformations, or integration into modern language tooling (e.g., JSON, Graphviz, or Go code generation). These gaps motivate further exploration into new modeling approaches and DSLs tailored for flexible and composable Petri Net representations.
+
+
     \subsection{Objectives of the Thesis in Context}
     The main goal of this thesis is to develop a domain-specific language for defining Petri nets, along with a compiler that translates these definitions into executable code for simulation and LaTeX code for visualization. The specific objectives are:
     \begin{itemize}
@@ -224,6 +245,8 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
         
         
         \subsubsection{GraphViz Generation}
+            Firstly, GraphViz is a graph visualization tool written in dot syntax, that can be easily compiled in a LaTeX environment. Also this language can be compiled in all sorts of formats like PDF, PNG, JPEG and many more.  
+
             The GraphViz module of the project is responsible for producing a .dot representation of a Petri Net. Its modus operandi closely mirrors that of the \texttt{toJSON} Parsec-based parser. It also relies on a Parsec parser to interpret the PNDL input and generate the corresponding arguments for the \texttt{DOT} syntax. The structure of the parser and its logic for handling \texttt{COLORED}, \texttt{TIMED}, and \texttt{INHIBITED} nets are analogous to those used in the JSON generator.
             
             The key distinction arises when dealing with \texttt{HIGH-LEVEL} nets. In this case, high-level constructs such as variable-bound places and transitions are not expanded into all possible concrete instances. Instead, they are grouped according to the variable on which they depend. Each such group is rendered as a distinct subgraph (or \texttt{subgraph cluster}) within the overall DOT graph. This visual separation serves to highlight the parametric nature of the net and the dependencies of each group on its associated variable.
@@ -232,7 +255,31 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
 
             In the generated GraphViz graph, places and transitions are visually distinguished using different node formatting styles. Places are represented as ellipses, while transitions are drawn as rectangles. This differentiation aligns with common Petri Net visualization conventions and improves the interpretability of the diagram.
     
+        \subsection{Comparison with Existing Tools}
 
+            The domain of Petri Net modeling has seen the development of various tools and standardization efforts. Among these, the \emph{Petri Net Markup Language (PNML)}~\cite{weber2003petri} represents the most widely accepted attempt at a standardized representation format. PNML is designed for interoperability and exchange of models between tools, but its XML-based structure can become verbose and less suitable for fast prototyping.
+            
+            Graphical modeling environments such as \emph{CPN IDE}~\cite{verbeek2021cpn} and \emph{PetriNet Editor}~\cite{app10217662} offer visual construction, simulation, and in some cases, code generation capabilities. These tools focus on ease of use for system designers and support a wide range of Petri Net extensions. Additionally, the \emph{Petri Nets Tools Database}~\cite{tgi_petri_tools} catalogs a wide variety of tools supporting analysis, modeling, and transformation of Petri Nets.
+            
+            In contrast, the project presented in this thesis introduces a textual, compiler-inspired pipeline for modeling Petri Nets. One of its main contributions is a high-level modeling mechanism that supports \emph{parameterized nets}, allowing users to define templates with indexed variables. This supports concise descriptions of structurally repetitive systems, improving scalability and modularity. Unlike CPN IDE or PetriNet Editor, which support simulation and GUI modeling, this tool is optimized for textual specification, batch processing, and automatic code generation.
+            
+            Furthermore, the tool integrates support for extensions such as \emph{Colored}, \emph{Timed}, and \emph{Inhibited} Petri Nets within a unified syntax. This composability is particularly useful in automated or programmatic settings. However, it currently lacks several features provided by mature tools:
+            \begin{itemize}
+                \item Only textual simulation is supported via the Go backend; lacks visual or interactive analysis tools.
+                \item There is no graphical modeling interface, which may hinder adoption by users unfamiliar with textual DSLs.
+                \item It does not support PNML import/export, limiting interoperability with standardized ecosystems.
+            \end{itemize}
+            
+            Despite these limitations, the tool excels in structural scalability and automation. It is particularly well-suited for use cases involving programmatically generated models, code integration, or parameter sweeps, and thus serves as a complementary approach to existing GUI-based and simulation-focused tools.
+    \subsection{Testing the Project with Examples}
+        \subsubsection{Inhibited Arcs}
+            Listing~\ref{fig:example2code} describes a net with an inhibited arc. Its graph is shown in Figure~\ref{fig:example2png}, demonstrating that the GraphViz output can support these type of arcs. In Figure~\ref{fig:example2output} the steps of the execution of the net can be seen. We can observe how the program stops when the Consumer place has 5 tokens. 
+        \subsubsection{Coloured tokens}
+            Listing~\ref{fig:example3code} describes the same net as before but has coloured tokens. It consumes blue and yellow tokens and produces green tokens, as seen in Figure~\ref{fig:example3png}. Also the output stops when the consumer has 5 green tokens, as seen in Figure~\ref{fig:example3output}.
+        \subsubsection{Timed transitions}
+            Listing~\ref{fig:example4code} describes the same net as before but has timed transitions. This feature does not impact the GraphViz output. When running the generated GoLang code an output similar to Listing~\ref{fig:example4output} is generated. The output can only be similar because Timed Nets introduce a randomised element, the duration of the transitions. 
+        \subsubsection{Highlevel nets}
+            Listing~\ref{fig:limit1} describes a high level net, with the difference that here $N$ is instanciated as $100$. Because a highlevel net does not change the behavior of the GoLang code, its output isn't included. In contrast, the GraphViz representation of this net has a major difference from the above discussed representations, and can be seen in Figure~\ref{fig:example1png}. That difference is the presence of the gray rectangle surrounding the places and transitions that depend on the variable $N$.  
     \subsection{Testing the Limits of the Tool}   
         To explore the performance boundaries and correctness of the Petri Net toolchain, a series of stress tests were designed and executed. These tests targeted both the parser and the backend code generation components.
         \subsubsection{Parametrized Expansion Overhead}
@@ -246,6 +293,51 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
             This net successfully compiles and passes through the parser. However, execution of the generated Go code results in overflow, as the default integer type on the target system is a 64-bit signed integer, with a maximum representable value of $2^{63} - 1$. This exposes a limitation in the type safety of the backend generator and suggests a need for improved handling of numeric ranges.
 
             Figure~\ref{fig:markings} shows the behaviors of the Go script for the first 10 iterations(plus the starting marking) of the net. We can observe how the places sometimes have negative values, a clear sign of integer overflow.
+
+    \subsection{Shortcomings of the Project}
+
+        This project, while functional in its core objectives, has several limitations when compared to existing tools in the domain.
+
+        \subsubsection{Missing Features Present in Other Tools}
+
+            A number of features commonly found in similar tools are not implemented in this project:
+            \begin{itemize}
+                \item \textbf{Graphical Interface}: The tool lacks a graphical editor or visualization interface, unlike tools such as CPN Tools~\cite{verbeek2021cpn} or PetriNet Editor~\cite{app10217662}. This omission stems from the project's primary goal: learning about compiler construction and language design. As such, efforts were focused on parsing, representation, and code generation rather than UI development.
+                \item \textbf{Standard Integration}: The tool does not natively support the Petri Net Markup Language (PNML)~\cite{weber2003petri}, which is widely regarded as a standard. This was largely due to late discovery of the format during the development process. A future version of the project could integrate support for PNML import/export to improve interoperability.
+            \end{itemize}
+
+        \subsubsection{Limitations in the High-Level Net Implementation}
+
+            The high-level Petri Net implementation introduces several structural restrictions:
+
+            \begin{itemize}
+                \item \textbf{No Cross-Instance Arcs}: The tool does not support transitions connecting instances of different indices in high-level places. For example, a transition with an incoming arc from \texttt{P<i>} and an outgoing arc to \texttt{P<j>} (where $i \ne j$) is disallowed, due to the logic used in the unfolding process.
+                \item \textbf{Uniform Initial Marking}: All instances of a high-level place \texttt{P<N>} must have the same initial marking. It is not possible to specify distinct initial token distributions for different values of $i$ within the same parameterized place.
+                \item When more than one group of high-level places interacts within the same net, the resulting behaviour becomes undefined. The current expansion logic does not resolve interactions across distinct parameter groups, leading to uncertain semantics.
+            \end{itemize}
+
+        \subsubsection{Future Work}
+
+        Despite these shortcomings, the project lays a foundation that can be improved upon. Future revisions could address these limitations by:
+        \begin{itemize}
+            \item Adding PNML compatibility and GUI support.
+            \item Refining the unfolding logic to allow cross-instance arcs.
+            \item Supporting non-uniform initial markings for parameterized places.
+        \end{itemize}
+
+        There is clear potential for future work to make the tool more competitive with existing platforms, while retaining its compiler-oriented design philosophy.
+
+        \section*{Conclusion}
+
+The development of this project was driven by a desire to explore compiler design principles through the lens of a domain-specific language for modeling Petri Nets. The goal was to support advanced features such as high-level constructs, colored tokens, timed behavior, and inhibitor arcs, and to compile these into executable code and visualization formats. The implementation focused on correctness and extensibility, with an emphasis on the backend logic rather than user interface aspects.
+
+Future improvements could include the development of a graphical user interface (GUI), support for simulation interactivity, formal verification tools, and alignment with existing standards such as the Petri Net Markup Language (PNML). Additionally, addressing current limitations of high-level net support, such as interactions between multiple parameterized groups, could significantly enhance the tool's expressiveness and reliability.
+
+From a personal standpoint, this project provided valuable insight into language parsing, transformation pipelines, and system modeling. The results achieved are significant in that they enable efficient modeling of complex systems using a concise and modular syntax. While not aiming to compete directly with mature tools in the field, this project represents a meaningful proof of concept and an educational endeavor with tangible outcomes.
+
+In terms of practical applications, the tool can be used in academic environments for teaching formal methods or as a lightweight modeling solution for prototyping concurrent systems. With continued development, it has the potential to serve as a flexible framework for Petri Net analysis in specialized domains such as distributed systems, protocol verification, or embedded systems design.
+
+
 \bibliographystyle{IEEEtran}
 \bibliography{citations}
 \section{Appendix}
@@ -297,27 +389,85 @@ Source -> Target [weight=value] [inh=value]
         captionpos=b
       }
       
-      \begin{figure}[p]  % [p] for page of floats
+    \begin{figure}[p]  % [p] for page of floats
         \centering
         \lstinputlisting[caption={Code generating memory errors}, label={fig:limit1}]{limit1.txt}
-      \end{figure}
+    \end{figure}
 
-      \begin{figure}[htbp]
+    \begin{figure}[htbp]
         \centering
         \includegraphics[width=\linewidth/2]{Error_message.png}  % adjust width as needed
         \caption{The error message}
         \label{fig:error}
-      \end{figure}
+    \end{figure}
       
-      \begin{figure}[p]  % [p] for page of floats
+    \begin{figure}[p]  % [p] for page of floats
         \centering
         \lstinputlisting[caption={Code generating memory errors}, label={fig:limit2}]{limit2.txt}
-      \end{figure}
+    \end{figure}
 
-      \begin{figure}[htbp]
+    \begin{figure}[htbp]
         \centering
         \includegraphics[width=\linewidth/3 *2]{Marking.png}  % adjust width as needed
         \caption{The generated markings by the net in Listing~\ref{fig:limit2}}
         \label{fig:markings}
+    \end{figure}
+
+    \begin{figure}[p]  % [p] for page of floats
+        \centering
+        \lstinputlisting[caption={Code testing inhibitor arcs}, label={fig:example2code}]{example2.pndl}
+    \end{figure}
+
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[width=\linewidth]{example2.png}  % adjust width as needed
+        \caption{The generated net in Listing~\ref{fig:example2code}}
+        \label{fig:example2png}
+    \end{figure}
+
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[width=\linewidth/2]{Output2.png}  % adjust width as needed
+        \caption{The generated output for the net in Listing~\ref{fig:example2code}}
+        \label{fig:example2output}
+    \end{figure}
+
+    \begin{figure}[p]  % [p] for page of floats
+        \centering
+        \lstinputlisting[caption={Code testing inhibitor arcs with coloured tokens.}, label={fig:example3code}]{example3.pndl}
+    \end{figure}
+
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[width=\linewidth]{example3.png}  % adjust width as needed
+        \caption{The generated net in Listing~\ref{fig:example3code}}
+        \label{fig:example3png}
+    \end{figure}
+
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[width=\linewidth/2]{Output2.png}  % adjust width as needed
+        \caption{The generated output for the net in Listing~\ref{fig:example3code}}
+        \label{fig:example3output}
+    \end{figure}
+
+    \begin{figure}[p]  % [p] for page of floats
+        \centering
+        \lstinputlisting[caption={Code testing inhibitor arcs with coloured tokens and timed transitions.}, label={fig:example4code}]{example4.pndl}
+    \end{figure}
+
+    \lstinputlisting[
+        caption={Output resulting from running the net from Listing~\ref{fig:example4code}},
+        label={fig:example4output},
+        breaklines=true,
+        basicstyle=\ttfamily\small,
+        frame=single,
+        captionpos=b
+    ]{Output4.txt}
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[width=\linewidth]{example1.png}  % adjust width as needed
+        \caption{The generated net in Listing~\ref{fig:limit1}}
+        \label{fig:example1png}
       \end{figure}
 \end{document}

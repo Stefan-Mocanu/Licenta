@@ -1,33 +1,15 @@
 digraph PetriNet {
   rankdir=LR;
   node [shape=circle, width=0.5, style=filled, fillcolor=lightgray];
-  ClientIdle;
-  RequestSent;
-  Processing;
-  ResponseReady;
-  ClientReceived;
-  ServerIdle;
+  Producer;
+  Consumer;
+  Buffer;
   node [shape=rectangle, width=0.1, height=0.6, style=filled, fillcolor=black];
-  SendRequest [xlabel="SendRequest", label=""];
-  ProcessRequest [xlabel="ProcessRequest", label=""];
-  SendResponse [xlabel="SendResponse", label=""];
-  ReceiveResponse [xlabel="ReceiveResponse", label=""];
-  subgraph cluster_N {
-    style=filled;
-    color=lightgrey;
-    node [style=filled,color=white];
-    ClientIdle; RequestSent; Processing; ResponseReady; ClientReceived; SendRequest; ProcessRequest; SendResponse; ReceiveResponse;
-    label = "N";
-  }
-  ClientIdle -> SendRequest [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0"><TR><TD>{blue:1}</TD></TR><TR><TD><FONT POINT-SIZE="10">inh={blue:1}</FONT></TD></TR></TABLE>>, headport=w];
-  SendRequest -> RequestSent [label=<{blue:1}>, tailport=e];
-  RequestSent -> ProcessRequest [label=<{blue:1}>, headport=w];
-  ServerIdle -> ProcessRequest [label=<{green:1}>, headport=w];
-  ProcessRequest -> Processing [label=<{blue:1}>, tailport=e];
-  ProcessRequest -> ServerIdle [label=<{green:1}>, tailport=e];
-  Processing -> SendResponse [label=<{blue:1}>, headport=w];
-  SendResponse -> ResponseReady [label=<{blue:1}>, tailport=e];
-  ResponseReady -> ReceiveResponse [label=<{blue:1}>, headport=w];
-  ReceiveResponse -> ClientReceived [label=<{blue:1}>, tailport=e];
-  ReceiveResponse -> ClientIdle [label=<{blue:1}>, tailport=e];
+  Produce [xlabel="Produce", label=""];
+  Consume [xlabel="Consume", label=""];
+  Producer -> Produce [label=<{yellow:1,blue:1}>, headport=w];
+  Produce -> Buffer [label=<{green:1}>, tailport=e];
+  Buffer -> Consume [label=<{green:1}>, headport=w];
+  Consume -> Consumer [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0"><TR><TD>{green:1}</TD></TR><TR><TD><FONT POINT-SIZE="10">inh={green:5}</FONT></TD></TR></TABLE>>, tailport=e];
+  Consume -> Producer [label=<{yellow:1,blue:1}>, tailport=e];
 }

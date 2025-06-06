@@ -1,0 +1,17 @@
+~NET_TYPE
+INHIBITED COLORED
+~PLACES
+Producer [tokens={yellow:1,blue:1}]
+Consumer [tokens={green:0}]
+Buffer [tokens={}]
+
+~TRANSITIONS
+Produce
+Consume
+
+~ARCS
+Producer -> Produce [weight={yellow:1,blue:1}]
+Produce -> Buffer [weight={green:1}]    
+Buffer -> Consume [weight={green:1}]
+Consume -> Consumer [weight={green:1}] [inh={green:5}]
+Consume -> Producer [weight={yellow:1,blue:1}]

@@ -492,6 +492,8 @@ checkCondition cond (NetType colored timed inhibited _ _) =
          "COLORED AND NOT INHIBITED" -> colored && not inhibited
          "NOT COLORED AND NOT INHIBITED" -> not colored && not inhibited
          "TIMED AND NOT COLORED" -> timed && not colored
+         "COLORED AND NOT TIMED" -> colored && not timed
+         "NOT COLORED AND NOT TIMED" -> not colored && not timed
          _                       -> False
 
 compileCommand :: FilePath -> IO ()

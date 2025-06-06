@@ -2,8 +2,8 @@
 P1 [tokens=1000000]
 P2 [tokens=0]
 ~TRANSITIONS
-aa
-cc
+T1
+T2
 ~ARCS
 P1 -> T1 [weight=1]
 T1 -> P2 [weight=9223372036854775807]

@@ -89,29 +89,58 @@ func readNetFromJSONFile() (Net, Marking) {
 	return net, m0
 }
 
-func compareArc(marking Marking, arc Arc) bool {
-	<<NOT COLORED and NOT INHIBITED,return (marking.CONTENT[arc.PLACE] < arc.VALUE)>>
-	<<NOT COLORED AND INHIBITED,return (marking.CONTENT[arc.PLACE] >= arc.VALUE) || (arc.INHIBITOR < marking.CONTENT[arc.PLACE])>>
-	<<COLORED AND INHIBITED,ok := false
+<<NOT COLORED and INHIBITED, func compareArcExit(marking Marking, arc Arc) bool {
+	if arc.INHIBITOR == 0 {
+		return true
+	}
+	return arc.INHIBITOR >= marking.CONTENT[arc.PLACE]+arc.VALUE
+}>>
+
+<<COLORED and INHIBITED, func compareArcExit(marking Marking, arc Arc) bool {
+	ok := true
 	for color, _ := range colors {
-		_, verify := arc.VALUE[color]
+		_, verify := arc.INHIBITOR[color]
 		if !verify {
 			continue
 		}
-		if (marking.CONTENT[arc.PLACE][color] >= arc.VALUE[color]) || (arc.INHIBITOR[color] < marking.CONTENT[arc.PLACE][color]) {
-			ok = true
+		if verify && arc.INHIBITOR[color] < marking.CONTENT[arc.PLACE][color]+arc.VALUE[color] {
+			ok = false
+			break
+		}
+	}
+	return ok
+}>>
+
+func compareArc(marking Marking, arc Arc) bool {
+	<<NOT COLORED and NOT INHIBITED,return (marking.CONTENT[arc.PLACE] < arc.VALUE)>>
+	<<NOT COLORED AND INHIBITED,cond1 := (marking.CONTENT[arc.PLACE] >= arc.VALUE)
+	cond2 := (arc.INHIBITOR >= marking.CONTENT[arc.PLACE]) || arc.INHIBITOR == 0
+	return cond1 && cond2>>
+	<<COLORED AND INHIBITED,ok := true
+	for color, _ := range colors {
+		_, verify1 := arc.VALUE[color]
+		_, verify2 := arc.INHIBITOR[color]
+		if !verify1 {
+			continue
+		}
+		if marking.CONTENT[arc.PLACE][color] < arc.VALUE[color] {
+			ok = false
+			break
+		}
+		if verify2 && (arc.INHIBITOR[color] < marking.CONTENT[arc.PLACE][color]) {
+			ok = false
 			break
 		}
 	}
 	return ok>>
-	<<COLORED AND NOT INHIBITED,ok := false
+	<<COLORED AND NOT INHIBITED,ok := true
 	for color, _ := range colors {
 		_, verify := arc.VALUE[color]
 		if !verify {
 			continue
 		}
-		if (marking.CONTENT[arc.PLACE][color] >= arc.VALUE[color]){
-			ok = true
+		if marking.CONTENT[arc.PLACE][color] < arc.VALUE[color] {
+			ok = false
 			break
 		}
 	}
@@ -128,6 +157,12 @@ func getViableTransitions(net Net, marking Marking) []string {
 				break
 			}
 		}
+		<<INHIBITED,for _, arc := range net.TRANSITIONS[transition].OUTPUT {
+			if !compareArcExit(marking, arc) {
+				ok = false
+				break
+			}
+		}>>
 		if ok {
 			result = append(result, transition)
 		}
@@ -149,12 +184,13 @@ func activateTransition(net Net, transitionName string, m Marking) Marking {
 			newMarking.CONTENT[arc.PLACE][color] -= arc.VALUE[color]
 		}>>
 	}
-	for _, arc := range transition.OUTPUT {
-		<<NOT COLORED,newMarking.CONTENT[arc.PLACE] += arc.VALUE>>
-		<<COLORED, for color, _ := range colors {
+	<<NOT TIMED, for _, arc := range transition.OUTPUT {>>
+		<<NOT COLORED and NOT TIMED,newMarking.CONTENT[arc.PLACE] += arc.VALUE>>
+		<<COLORED and NOT TIMED, for color, _ := range colors {
 			newMarking.CONTENT[arc.PLACE][color] += arc.VALUE[color]
 		}>>
-	}
+		
+	<<NOT TIMED,}>>
 	return newMarking
 }
 
@@ -211,7 +247,6 @@ func main() {
 		if len(transitions) > 0 {
 			transition := selectTransition(transitions)
 			current_marking = activateTransition(net, transition, markings[len(markings)-1])
-			fmt.Println("Started transition", transition, "with id:", startId)
 			markings = append(markings, current_marking)
 			mini := net.TRANSITIONS[transition].MINTIME
 			maxi := net.TRANSITIONS[transition].MAXTIME
@@ -221,6 +256,7 @@ func main() {
 			} else {
 				transition_time = rand.Intn(maxi-mini) + mini
 			}
+			fmt.Println("Started transition", transition, "with id:", startId,"with duration",transition_time)
 			activeTransitions = append(activeTransitions, tuple{
 				transition: transition,
 				time:       transition_time,
@@ -232,7 +268,7 @@ func main() {
 		deleted := 0
 		copy_activeTransitions := activeTransitions
 		for index, tuple := range copy_activeTransitions {
-			if tuple.time == 1 {
+			if tuple.time <= 1 {
 				activeTransitions = slices.Delete(activeTransitions, index-deleted, index-deleted+1)
 				current_marking = endTransition(net, tuple.transition, markings[len(markings)-1])
 				markings = append(markings, current_marking)
