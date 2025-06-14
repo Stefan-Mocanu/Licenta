@@ -5,14 +5,34 @@
 \usepackage{bbold}
 \usepackage{mathtools}
 \usepackage[pdf]{graphviz}
-\usepackage{graphicx}
-\usepackage{listings}
 \usepackage{listings}
 \usepackage{caption}
 \usepackage{url}
-
+\usepackage{graphicx}      % for \includegraphics
+\usepackage{fancyhdr}
+\usepackage{titling}       % for \@title and \@author
+% Paths and definitions
+\graphicspath{{./images/}}
 \newtheorem{definition}{Definition}
+
+\title{Compilarea Rețelelor Petri: De la Descriere Formală la Simulare și Vizualizare}
+\author{Mocanu Ștefan}
+
+% Generează variabilele cu @
+\makeatletter
+
 \begin{document}
+
+\include{0-title}
+\restoregeometry
+\newgeometry{
+    margin=2.5cm
+}
+
+\include{0-abstract}
+
+\tableofcontents
+\newpage
 \section{Introduction}
 This thesis is both a research and software development project, situated at the intersection of the domains of Petri net theory and compiler design. It explores the use of formal methods for the modeling and simulation of concurrent systems, aiming to bridge the gap between theoretical models and executable implementations.
 
@@ -23,14 +43,14 @@ To support automated analysis and execution, this thesis integrates compiler tec
 The motivation behind choosing this topic stems from both a theoretical interest in formal systems and a practical desire to support verification and testing of concurrent and parallel systems. As distributed software becomes increasingly prevalent, tools that simplify the specification and analysis of such systems are of growing importance. A dedicated language for Petri nets supports this goal by lowering the barrier to entry for formal modeling and enhancing the efficiency of simulation and validation processes.
 
 The main contribution of this thesis is the development of a domain-specific language for describing Petri nets, along with a compiler implemented in Haskell. This compiler translates Petri net descriptions into GoLang code for execution and GraphViz for graphical visualization, enabling both simulation and documentation. The project draws on knowledge from formal language theory, compiler construction, and concurrent system modeling, offering a cohesive and practical toolset for analyzing distributed behaviors.
-    \subsection{Why Petri Nets}
+    \subsection*{Why Petri Nets}
     One of the main motivations for choosing a project on Petri nets was my interest in distributed systems. These systems are inherently complex due to concurrency, synchronization, and communication challenges. Petri nets, with their formal semantics and graphical nature, provide a powerful framework for modeling and analyzing such systems. Their ability to represent parallelism and detect issues like deadlocks or race conditions makes them highly relevant for the study and simulation of distributed architectures.
 
     Additionally, at the time I selected this topic, I was curious about formal verification methods and wanted to explore how mathematical models could be used to reason about the correctness of systems. Petri nets offered an accessible and visually intuitive gateway into the world of formal methods. By working on this project, I was able to gain hands-on experience with the modeling and analysis of concurrent behavior, while also exploring how these models can be transformed into executable simulations, bridging the gap between theoretical models and practical implementations.
 
 \section{Preliminaries}
     \subsection{Definitions}
-    The following two definitions are from  \cite{rozenberg1996elementary}:
+    The following two definitions are from \cite{rozenberg1996elementary}:
     \begin{definition}
         A \textbf{net} is a triple \(N=(P,T,F)\) where: 
         \begin{enumerate}
@@ -88,12 +108,12 @@ The main contribution of this thesis is the development of a domain-specific lan
     \end{definition}
     The following definition from \cite{diaz2013petri} presents Timed Petri Nets, which extend the definition of simple PN by associating time semantics with transitions or tokens. This addition enables the modeling of temporal constraints and delays in system behavior, allowing transitions to fire only after specific time intervals have elapsed. Timed Petri Nets are particularly useful for representing real-time systems, performance analysis, and scenarios where timing and synchronization are critical to system correctness.
     \begin{definition}
-        Timed Petri nets extend Petri nets by associating a firing duration with each transition. More formally, a \textbf{time Petri net} is a tuple $\mathrm{TPN}=(\mathrm{PN},\mathrm{IS})$, in which $PN$ is a Petri net, and $IS:T\rightarrow Q^+ \times (Q^+ \cup \{\infty\})$ is the static interval function. 
+        Timed Petri nets extend Petri nets by associating a firing duration with each transition. More formally, a \textbf{timed Petri net} is a tuple $\mathrm{TPN}=(\mathrm{PN},\mathrm{IS})$, in which $\mathrm{PN}$ is a Petri net, and $\mathrm{IS}:T\rightarrow Q^+ \times (Q^+ \cup \{\infty\})$ is the static interval function. 
     \end{definition}
         
     The following definition from \cite{diaz2013petri} introduces \emph{High-Level Petri Nets}, a term we adopt to describe what are formally known as \emph{Parameterized Petri Nets}. These extend basic Petri nets by enabling parts of the net to be specified as parameterized templates. Such templates use indexed variables like \texttt{<N>} to define scalable sections that are automatically expanded into $N$ structurally identical subnetworks. Places, transitions, and arcs involving these parameters are replicated per instance, allowing concise modeling of systems with repeating components such as multiple clients or concurrent processes. This approach supports modular design and simplifies the specification of large, regular Petri nets.
     \begin{definition}
-        A \emph{parameterized Petri net} is a tuple
+        A \emph{parameterized Petri net (PPN)} is a tuple
 \[
 \mathrm{PPN} = (P_0, P_{\mathrm{tmpl}}, T_0, T_{\mathrm{tmpl}}, F, M_0)
 \]
@@ -125,9 +145,9 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
         Numerous tools exist for modeling, simulating, and analyzing Petri Nets. Notable platforms include:
 
         \begin{itemize}
-            \item \textbf{CPN Tools}\cite{verbeek2021cpn} is a widely-used environment for Colored Petri Nets. It supports graphical modeling and powerful simulation capabilities tailored to high-level Petri Nets.
-            \item \textbf{Petrinet Editor}\cite{app10217662} offers a browser-based modeling interface for basic and extended Petri Net types, with export and visualization support.
-            \item A comprehensive and regularly updated list of Petri Net tools is maintained by the University of Hamburg\cite{tgi_petri_tools}. This database includes editors, analyzers, simulators, and verification tools for a wide spectrum of Petri Net variants.
+            \item \textbf{CPN Tools} \cite{verbeek2021cpn} is a widely-used environment for Colored Petri Nets. It supports graphical modeling and powerful simulation capabilities tailored to high-level Petri Nets.
+            \item \textbf{Petrinet Editor} \cite{app10217662} offers a browser-based modeling interface for basic and extended Petri Net types, with export and visualization support.
+            \item A comprehensive and regularly updated list of Petri Net tools is maintained by the University of Hamburg~\cite{tgi_petri_tools}. This database includes editors, analyzers, simulators, and verification tools for a wide spectrum of Petri Net variants.
         \end{itemize}
 
         Despite the variety of existing solutions, many tools target specific net types or modeling scenarios and may lack support for extensible, user-defined features such as parametric expansion, custom net transformations, or integration into modern language tooling (e.g., JSON, Graphviz, or Go code generation). These gaps motivate further exploration into new modeling approaches and DSLs tailored for flexible and composable Petri Net representations.
@@ -140,7 +160,7 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
         \item To implement a compiler in Haskell that generates both simulation-ready code and graphical representations.
         \item To compare this approach with existing tools and evaluate its advantages in terms of usability, automation, and flexibility.
     \end{itemize}
-    This project aims to bridge the gap between formal modeling techniques and practical implementation, making Petri net analysis more accessible and automated.
+    This project bridges the gap between formal modeling and implementation, aiming to make Petri Net analysis not only more accessible but also automated.
     
 \section{Petri Net Description Language}
     We start a few preliminary notions on the compilation in Haskell, a short presentation motivation the usage of the programming language Go.
@@ -227,7 +247,7 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
             \end{itemize}
         \end{enumerate}
         \subsubsection{Generate-Go commnand}
-            The \texttt{generate\-go} command interprets only the \texttt{NET\_TYPE} directive from the PNDL file and produces a fully functional Go source file based on a predefined template. This template is almost identical to a standard Go file, with the exception of custom compile-time conditionals expressed using the syntax \texttt{<<condition, code>>}. These conditional code blocks are evaluated during generation and are only included in the final output if their corresponding condition holds. Conditions can be logical combinations such as \texttt{COLORED}, \texttt{NOT COLORED}, \texttt{TIMED}, \texttt{INHIBITED}, or even composite conditions like \texttt{TIMED AND INHIBITED}.
+            The \texttt{generate-go} command interprets only the \texttt{NET\_TYPE} directive from the PNDL file and produces a fully functional Go source file based on a predefined template. This template is almost identical to a standard Go file, with the exception of custom compile-time conditionals expressed using the syntax \texttt{<<condition, code>>}. These conditional code blocks are evaluated during generation and are only included in the final output if their corresponding condition holds. Conditions can be logical combinations such as \texttt{COLORED}, \texttt{NOT COLORED}, \texttt{TIMED}, \texttt{INHIBITED}, or even composite conditions like \texttt{TIMED AND INHIBITED}.
 
             The structure of the generated Go file is modular and follows the logic of simulating a Petri Net execution:
             
@@ -297,13 +317,14 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
 
             Figure~\ref{fig:markings} shows the behaviors of the Go script for the first 10 iterations (plus the starting marking) of the net. We can observe how the places sometimes have negative values, a clear sign of integer overflow.
 
-    
-\section*{Conclusion}
-    \subsection{Shortcomings of the Project}
+
+\section{Conclusion}
+    \addcontentsline{toc}{subsection}{Shortcomings of the Project}
+    \subsection*{Shortcomings of the Project}
 
     This project, while functional in its core objectives, has several limitations when compared to existing tools in the domain.
 
-    \subsubsection{Missing Features Present in Other Tools}
+    \subsubsection*{Missing Features Present in Other Tools}
 
         A number of features commonly found in similar tools are not implemented in this project:
         \begin{itemize}
@@ -311,7 +332,7 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
             \item \textbf{Standard Integration}: The tool does not natively support the Petri Net Markup Language (PNML)~\cite{weber2003petri}, which is widely regarded as a standard. This was largely due to late discovery of the format during the development process. A future version of the project could integrate support for PNML import/export to improve interoperability.
         \end{itemize}
 
-    \subsubsection{Limitations in the High-Level Net Implementation}
+    \subsubsection*{Limitations in the High-Level Net Implementation}
 
         The high-level Petri Net implementation introduces several structural restrictions:
 
@@ -321,18 +342,18 @@ The flow relation and initial marking are lifted accordingly. For example, $(p, 
             \item When more than one group of high-level places interacts within the same net, the resulting behaviour becomes undefined. The current expansion logic does not resolve interactions across distinct parameter groups, leading to uncertain semantics.
         \end{itemize}
 
-    \subsubsection{Future Work}
+    % \subsubsection*{Future Work}
 
-    Despite these shortcomings, the project lays a foundation that can be improved upon. Future revisions could address these limitations by:
-    \begin{itemize}
-        \item Adding PNML compatibility and GUI support.
-        \item Refining the unfolding logic to allow cross-instance arcs.
-        \item Supporting non-uniform initial markings for parameterized places.
-    \end{itemize}
+    % Despite these shortcomings, the project lays a foundation that can be improved upon. Future revisions could address these limitations by:
+    % \begin{itemize}
+    %     \item Adding PNML compatibility and GUI support.
+    %     \item Refining the unfolding logic to allow cross-instance arcs.
+    %     \item Supporting non-uniform initial markings for parameterized places.
+    % \end{itemize}
 
-    There is clear potential for future work to make the tool more competitive with existing platforms, while retaining its compiler-oriented design philosophy.
-
-\subsection{Conclusion}
+    % There is clear potential for future work to make the tool more competitive with existing platforms, while retaining its compiler-oriented design philosophy.
+\addcontentsline{toc}{subsection}{Overview and Future Work}
+\subsection*{Overview and Future Work}
 The development of this project was driven by a desire to explore compiler design principles through the lens of a domain-specific language for modeling Petri Nets. The goal was to support advanced features such as high-level constructs, colored tokens, timed behavior, and inhibitor arcs, and to compile these into executable code and visualization formats. The implementation focused on correctness and extensibility, with an emphasis on the backend logic rather than user interface aspects.
 
 Future improvements could include the development of a graphical user interface (GUI), support for simulation interactivity, formal verification tools, and alignment with existing standards such as the Petri Net Markup Language (PNML). Additionally, addressing current limitations of high-level net support, such as interactions between multiple parameterized groups, could significantly enhance the tool's expressiveness and reliability.
@@ -346,7 +367,8 @@ In terms of practical applications, the tool can be used in academic environment
 \bibliographystyle{IEEEtran}
 \bibliography{citations}
 \newpage
-\section{Appendix}
+\addcontentsline{toc}{section}{Appendix}
+\section*{Appendix}
     \begin{figure}[hbtp]
         \caption{PNDL syntax}
         \label{fig:PNDLsyntax}

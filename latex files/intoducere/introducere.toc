@@ -1,0 +1,29 @@
+\contentsline {section}{\numberline {1}Introduction}{4}{}%
+\contentsline {section}{\numberline {2}Preliminaries}{5}{}%
+\contentsline {subsection}{\numberline {2.1}Definitions}{5}{}%
+\contentsline {subsection}{\numberline {2.2}Current State of Petri Net Modeling}{9}{}%
+\contentsline {subsubsection}{\numberline {2.2.1}Petri Net Markup Language (PNML)}{9}{}%
+\contentsline {subsubsection}{\numberline {2.2.2}Existing Tools and Modeling Platforms}{9}{}%
+\contentsline {subsection}{\numberline {2.3}Objectives of the Thesis in Context}{10}{}%
+\contentsline {section}{\numberline {3}Petri Net Description Language}{10}{}%
+\contentsline {subsection}{\numberline {3.1}Compilation in Haskell}{11}{}%
+\contentsline {subsection}{\numberline {3.2}GoLang}{12}{}%
+\contentsline {subsection}{\numberline {3.3}Implementation}{13}{}%
+\contentsline {subsubsection}{\numberline {3.3.1}The PNDL Language}{13}{}%
+\contentsline {subsubsection}{\numberline {3.3.2}The Interface of the Project}{14}{}%
+\contentsline {subsubsection}{\numberline {3.3.3}Compile command}{14}{}%
+\contentsline {subsubsection}{\numberline {3.3.4}Generate-Go commnand}{15}{}%
+\contentsline {subsubsection}{\numberline {3.3.5}GraphViz Generation}{17}{}%
+\contentsline {subsection}{\numberline {3.4}Comparison with Existing Tools}{18}{}%
+\contentsline {subsection}{\numberline {3.5}Testing the Project with Examples}{19}{}%
+\contentsline {subsubsection}{\numberline {3.5.1}Inhibited Arcs}{19}{}%
+\contentsline {subsubsection}{\numberline {3.5.2}Coloured tokens}{19}{}%
+\contentsline {subsubsection}{\numberline {3.5.3}Timed transitions}{19}{}%
+\contentsline {subsubsection}{\numberline {3.5.4}Highlevel nets}{19}{}%
+\contentsline {subsection}{\numberline {3.6}Testing the Limits of the Tool}{20}{}%
+\contentsline {subsubsection}{\numberline {3.6.1}Parametrized Expansion Overhead}{20}{}%
+\contentsline {subsubsection}{\numberline {3.6.2}Integer Overflow in Go Backend}{20}{}%
+\contentsline {section}{\numberline {4}Conclusion}{21}{}%
+\contentsline {subsection}{Shortcomings of the Project}{21}{}%
+\contentsline {subsection}{Overview and Future Work}{22}{}%
+\contentsline {section}{Appendix}{26}{}%
